@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --watch --content-base dist/"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/AlexisK/data-binding/issues"
   },
-  "homepage": "https://github.com/AlexisK/data-binding#readme"
+  "homepage": "https://github.com/AlexisK/data-binding#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^2.26.0",
+    "path": "^0.12.7",
+    "webpack": "^2.2.0",
+    "webpack-dev-server": "^1.16.2"
+  }
 }
