@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/AlexisK/data-binding#readme",
   "devDependencies": {
+    "fs": "0.0.1-security",
     "html-webpack-plugin": "^2.26.0",
     "path": "^0.12.7",
+    "raw-loader": "^0.5.1",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^1.16.2"
   }

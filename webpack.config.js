@@ -1,6 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+var ROOT = path.resolve(__dirname, '..');
+function root(args) {
+    args = Array.prototype.slice.call(arguments, 0);
+    return path.join.apply(path, [ROOT].concat(args));
+}
+
 const env = {
     devServer: {
         host: 'localhost',
@@ -17,10 +23,51 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'app.js'
     },
+
+    resolveLoader: {
+        alias: {
+            'data-bind-loader': path.join(__dirname, './loaders/data-bind-loader.js')
+        }
+    },
+
+    resolve: {
+        extensions : ['.js', '.json', '.scss'],
+    },
+
+    module: {
+        rules: [
+            {
+                test    : /\.html$/,
+                loaders : [
+                    'raw-loader',
+                ],
+                exclude : [/node_modules/, root('src/index.html')]
+            },
+            {
+                test    : /\.js$/,
+                loaders : [
+                    'data-bind-loader'
+                ],
+                exclude : [/node_modules/, root('src/app.js')]
+            },
+            {test : /\.json$/, loader : 'json-loader'},
+            {test : /\.css$/, loaders : ['to-string-loader', 'css-loader']},
+            {
+                test    : /\.scss$/,
+                loaders : ['raw-loader', 'sass-loader?includePaths[]=' + [root('src', 'app_styles')]],
+                exclude : /node_modules/,
+            },
+            {
+                test   : /\.(png|jpe?g|gif|svg|woff2?|ttf|eot|ico)$/,
+                loader : 'file?name=static/[name].[hash].[ext]?'
+            }
+        ]
+    },
+
     devServer: {
         host: env.devServer.host || 'localhost',
         port: env.devServer.port || 3000,
-        open: true,
+        //open: true,
         inline: true,
         historyApiFallback: true,
         watchOptions: {
