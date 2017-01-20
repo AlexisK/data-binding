@@ -46,7 +46,7 @@ export class TestComponent {
     }
 
     __updateNode(target) {
-        target.textContent = target.nativeValue.replace(/{{([\d\w:'",.\/-_=+~]+)}}/gi, (match, ex) => eval(ex));
+        target.textContent = target.nativeValue.replace(/{{([\s\d\w:'",.\/-_=+~]+)}}/gi, (match, ex) => eval(ex));
     }
 
     __checkNode(target) {
