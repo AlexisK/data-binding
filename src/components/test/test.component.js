@@ -19,10 +19,25 @@ export class TestComponent {
         this.str = 'Hello';
 
         window.test = this;
+
+        this.__generateProps();
     }
 
     test() {
         console.log(this.__name, this.__selector, this.__template);
+    }
+
+    __generateProps() {
+        Object.keys(this).forEach(key => {
+            if ( key[0] !== '_' ) {
+                this['__att__' + key] = this[key];
+                this.__defineGetter__(key, () => this['__att__' + key]);
+                this.__defineSetter__(key, (v) => {
+                    this['__att__' + key] = v;
+                    this.__updateData(key, v);
+                });
+            }
+        });
     }
 
     __updateData(key, val) {
@@ -50,7 +65,7 @@ export class TestComponent {
         }
 
         Object.keys(this).forEach(key => {
-            if ( key[0] !== '_') {
+            if ( key[0] !== '_' ) {
                 this.__updateData(key, this[key]);
             }
         });
@@ -58,7 +73,7 @@ export class TestComponent {
 
 
     __recalcReferences() {
-        this.__checks    = {};
+        this.__checks           = {};
         this.__target.innerHTML = this.__template;
 
         iterateDom(this.__target, dom => {

@@ -3,7 +3,7 @@ const path = require('path');
 const re = /@(Component)\(({[\s\d\w:'",.\/-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{\s*(?:constructor\(\)\s+\{([{}\s\d\w:'",.\/-_=+~]*)})?/gi;
 
 function formatStr(str) {
- return ["'", str.replace("'", "\\'").replace('\n', ' '), "'"].join('');
+ return ["'", str.trim().replace("'", "\\'").replace('\n', ' '), "'"].join('');
 }
 
 function retrieveJson(str) {
