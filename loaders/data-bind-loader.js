@@ -1,11 +1,11 @@
 const fs            = require('fs');
 const path          = require('path');
-//const re = /@(Component)\(({[\s\d\w:'",.\/-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{\s*(?:constructor\(\)\s+\{([{}\s\d\w:'",.\/-_=+~]*)})?/gi;
-const re            = /@(Component)\(({[\s\d\w:'",.\/-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'",.\/-_=+~(){}]*)}\s*$/igm;
+
+const re            = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
 const reConstructor = /constructor\(\)\s*\{/;
 
 function formatStr(str) {
-    return ["'", str.trim().replace("'", "\\'").replace('\n', ' '), "'"].join('');
+    return ["'", str.trim().replace("'", "\\'").replace(/(?:\r?\n|\r)\s*/g, ' '), "'"].join('');
 }
 
 function retrieveJson(str) {
@@ -22,7 +22,7 @@ function readFileContent(reqPath, tplPath) {
     return resp;
 }
 
-function injectToConstructor(classBody, name, selector, template) {
+function injectToConstructor(classBody, name, params, loader) {
     let match         = new RegExp(reConstructor).exec(classBody);
     let pos           = match.index + match[0].length;
     let beforeContent = match.input.slice(0, pos);
@@ -38,11 +38,13 @@ function injectToConstructor(classBody, name, selector, template) {
     let constructorContent = afterContent.slice(0, i);
     afterContent           = afterContent.slice(i);
 
-    return [beforeContent, `this.__component = new Component();\
-                this.__component.__name=${formatStr(name)};\
-                this.__component.__selector=${formatStr(selector)};\
-                this.__component.__template=${formatStr(template)};\
-        `, constructorContent, 'this.__component.init(this);', afterContent].join('');
+    return [beforeContent, `\
+\nthis.__component = new Component();\
+\nthis.__component.__name=${formatStr(name)};\
+\nthis.__component.__selector=${formatStr(params.selector)};\
+\nthis.__component.__updateMethod=${formatStr(params.update || 'property')};\
+\nthis.__component.__template=${formatStr(readFileContent(loader.request, params.template))};\n\
+`, constructorContent, '\nthis.__component.init(this);', afterContent].join('');
 }
 
 module.exports = function (source, map) {
@@ -52,7 +54,7 @@ module.exports = function (source, map) {
     let modifiedSource = source.replace(re, (match, type, params, name, classBody) => {
         params = retrieveJson(params);
 
-        return [`export class ${name} {`, injectToConstructor(classBody, name, params.selector, readFileContent(this.request, params.template)), '}'].join('');
+        return [`export class ${name} {`, injectToConstructor(classBody, name, params, this), '}'].join('');
     });
 
     //console.log(modifiedSource);

@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-var ROOT = path.resolve(__dirname, '..');
+var ROOT = path.resolve(__dirname);
 function root(args) {
     args = Array.prototype.slice.call(arguments, 0);
     return path.join.apply(path, [ROOT].concat(args));
@@ -15,7 +15,6 @@ const env = {
 };
 const proxyRules = {
 };
-
 
 module.exports = {
     entry: './src/app.js',
@@ -32,6 +31,10 @@ module.exports = {
 
     resolve: {
         extensions : ['.js', '.json', '.scss'],
+        modules    : [root('src'), 'node_modules', 'app_modules'],
+        alias: {
+            core: root('src', 'core')
+        }
     },
 
     module: {

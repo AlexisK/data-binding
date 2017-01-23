@@ -1,0 +1,7 @@
+<div class="list">
+    <div class="item" *for="item in this.items">
+        <input type="checkbox" [checked]="item.value" />
+        <strong>{{item.title}}</strong>
+    </div>
+</div>
+<list-input></list-input>
