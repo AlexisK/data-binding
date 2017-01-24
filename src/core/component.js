@@ -1,5 +1,7 @@
 import { iterateDom } from "./iterateDom";
 import { subscribeEventLoopUpdate } from "./event-loop-update";
+import {storageService} from './storage.service';
+
 
 const reVariables = /\{\{([\s\d\w:'",.\/-_=+~]*)}}/gi;
 const reNameTest  = /this.([\w\d]+)/gi;
@@ -9,7 +11,6 @@ export class Component {
 
     // startup
     constructor() {
-        this.__app          = null;
         this.__target       = null;
         this._attrs         = {};
         // these are set with webpack custom loader 'data-bind-loader'
@@ -121,9 +122,9 @@ export class Component {
             }
             if ( ok ) {
 
-                if ( this.__app.component[domData.tag] ) {
-                    let component = new this.__app.component[domData.tag]();
-                    component.__component._createSelf(dom, this.__app);
+                if ( storageService.component[domData.tag] ) {
+                    let component = new storageService.component[domData.tag]();
+                    component.__component._createSelf(dom);
                 } else {
                     dom.childNodes.forEach(child => {
                         if ( child.nodeType === 3 ) {// text
@@ -138,8 +139,7 @@ export class Component {
     }
 
 
-    _createSelf(target, app) {
-        this.__app    = app;
+    _createSelf(target) {
         this.__target = target;
         this._recalcReferences();
     }
