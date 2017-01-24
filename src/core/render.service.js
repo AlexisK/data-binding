@@ -1,5 +1,6 @@
 import { breakStringToExec } from "./utils/break-string-to-exec";
 import { evalExpression } from "./utils/eval-expression";
+import { storage } from "./storage.service";
 
 const CHECK = {
     reNameTest        : /this.([\w\d]+)/gi,
@@ -35,6 +36,14 @@ export class RenderService {
         return newNode;
     }
 
+    static processInnerComponent(target, tag) {
+        if ( !target.__ownComponent ) {
+            target.__ownComponent = new storage.component[tag]();
+            target.__ownComponent.__component._createSelf(target);
+        }
+        return 0;
+    }
+
 
     //                |
     // render process |
@@ -59,9 +68,11 @@ export class RenderService {
     }
 
     renderWorker_element(target, context) {
-        RenderService.iterate(target, dom => {
-            this.render(dom, context);
-        });
+        if ( !target.__ownComponent ) {
+            RenderService.iterate(target, dom => {
+                this.render(dom, context);
+            });
+        }
     }
 
 
@@ -69,16 +80,19 @@ export class RenderService {
     // normalize (prepare) process |
     //                             |
     normalize(target, variablesMapping = {}) {
+        return this._normalize(target, variablesMapping, true);
+    }
+    _normalize(target, variablesMapping, isTop ) {
 
         let worker = this.normalizeWorkersBinding[target.nodeType];
         if ( worker ) {
-            worker(target, variablesMapping);
+            worker(target, variablesMapping, isTop);
         }
 
         return variablesMapping;
     }
 
-    normalizeWorker_text(dom, variablesMapping) {
+    normalizeWorker_text(dom, variablesMapping, isTop) {
         if ( !dom.__render && dom.textContent.indexOf(CHECK.textVarCheck) >= 0 ) {
             let stringExec = breakStringToExec(dom.textContent);
             stringExec.usedVariables.forEach(key => {
@@ -93,45 +107,54 @@ export class RenderService {
         }
     }
 
-    normalizeWorker_comment(dom, variablesMapping) {}
+    normalizeWorker_comment(dom, variablesMapping, isTop) {}
 
-    normalizeWorker_element(target, variablesMapping) {
+    normalizeWorker_element(target, variablesMapping, isTop) {
         let attrFor = target.getAttribute(CHECK.attributeFor);
+        let tag     = target.tagName.toLowerCase();
 
         if ( attrFor ) {
-            let anchor           = RenderService.createAnchor(target);
-            anchor.__originalDom = target;
-            anchor.__rules       = attrFor.split(' in ');
-            target.removeAttribute(CHECK.attributeFor);
-            target.parentNode.removeChild(target);
-            anchor.__ownNodes = [];
-
-            let match;
-            while (match = CHECK.reNameTest.exec(anchor.__rules[1])) {
-                variablesMapping[match[1]] = variablesMapping[match[1]] || [];
-                variablesMapping[match[1]].push(anchor);
-            }
-
-            anchor.__render = ctx => {
-                anchor.__ownNodes.forEach(dom => dom.parentNode.removeChild(dom));
-                anchor.__ownNodes = [];
-                let source = evalExpression(ctx, anchor.__rules[1]);
-                for (let i = 0; i < source.length; i++) {
-                    let localCtx = Object.assign({}, ctx);
-                    localCtx[anchor.__rules[0]] = source[i];
-
-                    let newNode = document.createElement(anchor.__originalDom.tagName);
-                    anchor.parentNode.insertBefore(newNode, anchor);
-                    anchor.__ownNodes.push(newNode);
-                    newNode.innerHTML = anchor.__originalDom.innerHTML;
-                    newNode.__checks = this.normalize(newNode);
-                    this.render(newNode, localCtx);
-                }
-            }
+            this.processInnerFor(target, variablesMapping, attrFor);
+        } else if ( !isTop && storage.component[tag] ) {
+            RenderService.processInnerComponent(target, tag);
         } else {
             RenderService.iterate(target, dom => {
-                this.normalize(dom, variablesMapping);
+                this._normalize(dom, variablesMapping);
             });
+        }
+    }
+
+    processInnerFor(target, variablesMapping, attrFor) {
+        let anchor           = RenderService.createAnchor(target);
+        anchor.__originalDom = target;
+        anchor.__rules       = attrFor.split(' in ');
+        target.removeAttribute(CHECK.attributeFor);
+        target.parentNode.removeChild(target);
+        anchor.__ownNodes = [];
+
+        let match;
+        while (match = CHECK.reNameTest.exec(anchor.__rules[1])) {
+            variablesMapping[match[1]] = variablesMapping[match[1]] || [];
+            variablesMapping[match[1]].push(anchor);
+        }
+
+        anchor.__render = ctx => {
+            anchor.__ownNodes.forEach(dom => dom.parentNode.removeChild(dom));
+            anchor.__ownNodes = [];
+            let source        = evalExpression(ctx, anchor.__rules[1]);
+            for (let i = 0; i < source.length; i++) {
+                let localCtx                = Object.assign({}, ctx);
+                localCtx[anchor.__rules[0]] = source[i];
+
+                let newNode = document.createElement(anchor.__originalDom.tagName);
+                newNode.className = anchor.__originalDom.className;
+                newNode.innerHTML = anchor.__originalDom.innerHTML;
+                newNode.__checks  = this.normalize(newNode);
+                anchor.parentNode.insertBefore(newNode, anchor);
+
+                anchor.__ownNodes.push(newNode);
+                this.render(newNode, localCtx);
+            }
         }
     }
 }

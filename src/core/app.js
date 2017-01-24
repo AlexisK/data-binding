@@ -1,5 +1,6 @@
 import { iterateDom } from './utils/iterate-dom';
 import { storage } from "./storage.service";
+import { renderService } from "./render.service";
 
 export class App {
 
@@ -19,12 +20,15 @@ export class App {
         //    (new component()).__component.test();
         //});
 
-        iterateDom(document.body, dom => {
-            let tag = dom.tagName.toLowerCase();
-            if ( storage.component[tag] ) {
-                let component = new storage.component[tag]();
-                component.__component._createSelf(dom);
-            }
-        });
+        renderService.normalize(document.body);
+        renderService.render(document.body);
+
+        //iterateDom(document.body, dom => {
+        //    let tag = dom.tagName.toLowerCase();
+        //    if ( storage.component[tag] ) {
+        //        let component = new storage.component[tag]();
+        //        component.__component._createSelf(dom);
+        //    }
+        //});
     }
 }
