@@ -1,9 +1,12 @@
 import { breakStringToExec } from "./utils/break-string-to-exec";
+import { evalExpression } from "./utils/eval-expression";
+
 const CHECK = {
-    reTextVariables   : /\{\{([\s\d\w:'",.\/-_=+~]*)}}/gi,
+    reNameTest        : /this.([\w\d]+)/gi,
     textVarCheck      : '{{',
     textVarCheckClose : '}}',
-    errorParsing      : '{{ERR}}'
+    errorParsing      : '{{ERR}}',
+    attributeFor      : '*for'
 };
 
 export class RenderService {
@@ -26,6 +29,12 @@ export class RenderService {
         Array.from(parent.childNodes).forEach(callback);
     }
 
+    static createAnchor(target) {
+        let newNode = document.createComment(target.tagName);
+        target.parentNode.insertBefore(newNode, target);
+        return newNode;
+    }
+
 
     //                |
     // render process |
@@ -43,7 +52,11 @@ export class RenderService {
         }
     }
 
-    renderWorker_comment(dom, context) {}
+    renderWorker_comment(dom, context) {
+        if ( dom.__render ) {
+            dom.__render(context);
+        }
+    }
 
     renderWorker_element(target, context) {
         RenderService.iterate(target, dom => {
@@ -57,18 +70,16 @@ export class RenderService {
     //                             |
     normalize(target, variablesMapping = {}) {
 
-        RenderService.iterate(target, dom => {
-            let worker = this.normalizeWorkersBinding[dom.nodeType];
-            if ( worker ) {
-                worker(dom, variablesMapping);
-            }
-        });
+        let worker = this.normalizeWorkersBinding[target.nodeType];
+        if ( worker ) {
+            worker(target, variablesMapping);
+        }
 
         return variablesMapping;
     }
 
     normalizeWorker_text(dom, variablesMapping) {
-        if ( dom.textContent.indexOf(CHECK.textVarCheck) >= 0 ) {
+        if ( !dom.__render && dom.textContent.indexOf(CHECK.textVarCheck) >= 0 ) {
             let stringExec = breakStringToExec(dom.textContent);
             stringExec.usedVariables.forEach(key => {
                 variablesMapping[key] = variablesMapping[key] || [];
@@ -84,8 +95,44 @@ export class RenderService {
 
     normalizeWorker_comment(dom, variablesMapping) {}
 
-    normalizeWorker_element(dom, variablesMapping) {
-        this.normalize(dom, variablesMapping);
+    normalizeWorker_element(target, variablesMapping) {
+        let attrFor = target.getAttribute(CHECK.attributeFor);
+
+        if ( attrFor ) {
+            let anchor           = RenderService.createAnchor(target);
+            anchor.__originalDom = target;
+            anchor.__rules       = attrFor.split(' in ');
+            target.removeAttribute(CHECK.attributeFor);
+            target.parentNode.removeChild(target);
+            anchor.__ownNodes = [];
+
+            let match;
+            while (match = CHECK.reNameTest.exec(anchor.__rules[1])) {
+                variablesMapping[match[1]] = variablesMapping[match[1]] || [];
+                variablesMapping[match[1]].push(anchor);
+            }
+
+            anchor.__render = ctx => {
+                anchor.__ownNodes.forEach(dom => dom.parentNode.removeChild(dom));
+                anchor.__ownNodes = [];
+                let source = evalExpression(ctx, anchor.__rules[1]);
+                for (let i = 0; i < source.length; i++) {
+                    let localCtx = Object.assign({}, ctx);
+                    localCtx[anchor.__rules[0]] = source[i];
+
+                    let newNode = document.createElement(anchor.__originalDom.tagName);
+                    anchor.parentNode.insertBefore(newNode, anchor);
+                    anchor.__ownNodes.push(newNode);
+                    newNode.innerHTML = anchor.__originalDom.innerHTML;
+                    newNode.__checks = this.normalize(newNode);
+                    this.render(newNode, localCtx);
+                }
+            }
+        } else {
+            RenderService.iterate(target, dom => {
+                this.normalize(dom, variablesMapping);
+            });
+        }
     }
 }
 

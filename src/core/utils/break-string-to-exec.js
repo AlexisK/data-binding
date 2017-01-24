@@ -1,19 +1,11 @@
+import { evalExpression } from "./eval-expression";
 const CHECK = {
     function          : 'function',
     textVarCheck      : '{{',
     textVarCheckClose : '}}',
-    reNameTest        : /this.([\w\d]+)/gi,
-    eval              : ['with(this) { return (', '); }']
+    reNameTest        : /this.([\w\d]+)/gi
 };
 
-function evalExpression(ctx, expr) {
-    try {
-        return (new Function(CHECK.eval.join(expr))).call(ctx);
-    } catch (err) {
-        console.warn('DATA_BIND: [Evaluating expression failed]\n\n', err);
-        return CHECK.errorParsing;
-    }
-}
 
 export function breakStringToExec(str) {
     let parseMap      = [];
@@ -42,7 +34,7 @@ export function breakStringToExec(str) {
         mode = !mode;
     }
 
-    let result =  function (ctx) {
+    let result           = function (ctx) {
         let result = [];
         parseMap.forEach(v => {
             if ( typeof(v) === CHECK.function ) {

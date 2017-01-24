@@ -1,4 +1,4 @@
-const ts     = 10;
+const ts     = 100;
 const queue  = [];
 let interval = null;
 

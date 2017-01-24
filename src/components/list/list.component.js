@@ -2,7 +2,8 @@ import { Component } from "core/component";
 
 @Component({
     selector: 'list',
-    template: './list.component.html'
+    template: './list.component.html',
+    update: 'hook'
 })
 export class ListComponent {
     constructor() {

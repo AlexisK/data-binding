@@ -42,7 +42,12 @@ export class Component {
         this._generateProps();
     }
 
+    _updateSubscribe_hook() {
+        this._generateHookProps();
+    }
+
     _updateSubscribe_constant() {
+        this._generateProps();
         subscribeEventLoopUpdate(this._blankUpdate.bind(this));
     }
 
@@ -54,7 +59,24 @@ export class Component {
                 this._ref.__defineGetter__(key, () => this._attrs[key]);
                 this._ref.__defineSetter__(key, (v) => {
                     this._attrs[key] = v;
-                    this._updateData(key, v);
+                    this._updateData(key);
+                });
+            }
+        });
+    }
+
+    _generateHookProps() {
+        //console.log(this);
+        Object.keys(this._ref).forEach(key => {
+            if ( key[0] !== '_' ) {
+                this._attrs[key] = this._ref[key];
+                this._ref.__defineGetter__(key, () => {
+                    setTimeout(() =>
+                        this._updateData(key), 1);
+                    return this._attrs[key];
+                });
+                this._ref.__defineSetter__(key, (v) => {
+                    this._attrs[key] = v;
                 });
             }
         });
@@ -63,12 +85,11 @@ export class Component {
 
     // triggers
     _blankUpdate() {
-        Object.keys(this._ref).forEach(key => {
+        Object.keys(this._attrs).forEach(key => {
             if ( key[0] !== '_' ) {
-                this._updateData(key, this._ref[key]);
+                this._updateData(key);
             }
         });
-        //console.log(this);
     }
 
 
@@ -89,7 +110,7 @@ export class Component {
 
 
     // update process
-    _updateData(key, val) {
+    _updateData(key) {
         //if ( this.__checksFor[key] ) {
         //    this.__checksFor[key].forEach(this._renderFor.bind(this._ref));
         //}
