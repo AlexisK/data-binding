@@ -19,4 +19,10 @@ export class ListComponent {
         ];
         window.list = this;
     }
+
+    addItem(title) {
+        this.items.push({
+            title, value: false
+        });
+    }
 }

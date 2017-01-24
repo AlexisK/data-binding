@@ -1,4 +1,4 @@
 <label>
     <strong>Input:</strong>
-    <input type="text" [value]="this.value" (onChange)="this.value=$event.target.value;" />
+    <input type="text" [value]="this.value" (onchange)="this.valueUpdated($event, $event.target.value)" />
 </label>

@@ -14,6 +14,8 @@ export class Component {
     constructor() {
         this.__target       = null;
         this._attrs         = {};
+        this._hookInterval  = null;
+        this._eventWorkers  = {};
         // these are set with webpack custom loader 'data-bind-loader'
         this.__name         = null;
         this.__selector     = null;
@@ -25,7 +27,21 @@ export class Component {
         this._ref        = ref;
         this.__checks    = {};
         this.__checksFor = {};
+        this._ref.emit   = this.emit.bind(this);
         this._initUpdateSubscribe();
+    }
+
+    subscribeEvent(name, worker) {
+        this._eventWorkers[name] = this._eventWorkers[name] || [];
+        this._eventWorkers[name].push(worker)
+    }
+
+    emit(key, val) {
+        if ( this._eventWorkers[key] ) {
+            this._eventWorkers[key].forEach(worker => {
+                worker(val);
+            });
+        }
     }
 
     test() {
@@ -51,8 +67,8 @@ export class Component {
         subscribeEventLoopUpdate(this._blankUpdate.bind(this));
     }
 
+
     _generateProps() {
-        //console.log(this);
         Object.keys(this._ref).forEach(key => {
             if ( key[0] !== '_' ) {
                 this._attrs[key] = this._ref[key];
@@ -66,12 +82,12 @@ export class Component {
     }
 
     _generateHookProps() {
-        //console.log(this);
         Object.keys(this._ref).forEach(key => {
             if ( key[0] !== '_' ) {
                 this._attrs[key] = this._ref[key];
                 this._ref.__defineGetter__(key, () => {
-                    setTimeout(() =>
+                    clearInterval(this._hookInterval);
+                    this._hookInterval = setTimeout(() =>
                         this._updateData(key), 1);
                     return this._attrs[key];
                 });
@@ -98,13 +114,14 @@ export class Component {
 
         this.__checks = renderService.normalize(this.__target);
 
-        renderService.render(this.__target, this._attrs);
+        renderService.render(this.__target, this._ref);
         this._blankUpdate();
     }
 
 
     _createSelf(target) {
-        this.__target = target;
+        this.__target      = target;
+        target.__component = this;
         this._recalcReferences();
     }
 

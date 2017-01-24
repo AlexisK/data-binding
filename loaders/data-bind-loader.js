@@ -5,7 +5,7 @@ const re            = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?
 const reConstructor = /constructor\(\)\s*\{/;
 
 function formatStr(str) {
-    return ["'", str.trim().replace("'", "\\'").replace(/(?:\r?\n|\r)\s*/g, ' '), "'"].join('');
+    return ["'", str.trim().replace(/'/g, "\\'").replace(/(?:\r?\n|\r)\s*/g, ' '), "'"].join('');
 }
 
 function retrieveJson(str) {

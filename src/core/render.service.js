@@ -7,7 +7,10 @@ const CHECK = {
     textVarCheck      : '{{',
     textVarCheckClose : '}}',
     errorParsing      : '{{ERR}}',
-    attributeFor      : '*for'
+    attributeFor      : '*for',
+    attributeEvent    : ['(', ')'],
+    attributeInput    : ['[', ']'],
+    event             : '$event'
 };
 
 export class RenderService {
@@ -24,7 +27,11 @@ export class RenderService {
             3 : this.normalizeWorker_text.bind(this),
             8 : this.normalizeWorker_comment.bind(this)
         };
+        this.eventHandlersBinding = {
+            'onchange': RenderService.handleEvent_onchange.bind(this)
+        }
     }
+
 
     static iterate(parent, callback) {
         Array.from(parent.childNodes).forEach(callback);
@@ -36,6 +43,7 @@ export class RenderService {
         return newNode;
     }
 
+
     static processInnerComponent(target, tag) {
         if ( !target.__ownComponent ) {
             target.__ownComponent = new storage.component[tag]();
@@ -45,44 +53,88 @@ export class RenderService {
     }
 
 
-    //                |
-    // render process |
-    //                |
-    render(target, context = this.defaultContext) {
-        let worker = this.renderWorkersBinding[target.nodeType];
-        if ( worker ) {
-            worker(target, context);
+    // Events
+    handleElementEventAttribute(target, eventName, expr, ctx) {
+        if ( this.eventHandlersBinding[eventName] ) {
+            this.eventHandlersBinding[eventName](target, eventName, expr, ctx);
+        } else {
+            this.handleEvent__universal(target, eventName, expr, ctx);
         }
     }
 
-    renderWorker_text(dom, context) {
-        if ( dom.__render ) {
-            dom.__render(context);
-        }
-    }
-
-    renderWorker_comment(dom, context) {
-        if ( dom.__render ) {
-            dom.__render(context);
-        }
-    }
-
-    renderWorker_element(target, context) {
-        if ( !target.__ownComponent ) {
-            RenderService.iterate(target, dom => {
-                this.render(dom, context);
+    handleEvent__universal(target, eventName, expr, ctx) {
+        if ( target.__component ) {
+            target.__component.subscribeEvent(eventName, ev => {
+                let localCtx = target.__parentContext || ctx;
+                localCtx[CHECK.event] = ev;
+                evalExpression(localCtx, expr);
             });
         }
     }
 
+    static handleEvent_onchange(target, eventName, expr, ctx) {
+        target.addEventListener('keyup', ev => {
+            ctx[CHECK.event] = ev;
+            evalExpression(ctx, expr);
+        });
+    }
+
+
+    //                |
+    // Render process |
+    //                |
+    render(target, context = this.defaultContext) {
+        this._render(target, context, true)
+    }
+
+    _render(target, context, isTop) {
+        let worker = this.renderWorkersBinding[target.nodeType];
+        if ( worker ) {
+            worker(target, context, isTop);
+        }
+    }
+
+    renderWorker_text(dom, context, isTop) {
+        if ( dom.__render ) {
+            dom.__render(context);
+        }
+    }
+
+    renderWorker_comment(dom, context, isTop) {
+        if ( dom.__render ) {
+            dom.__render(context);
+        }
+    }
+
+    renderWorker_element(target, context, isTop) {
+        //console.log(target);
+        for (let i = 0; i < target.attributes.length; i++) {
+            let attr = target.attributes[i];
+            //console.log('\t',attr.name);
+            if ( attr.name[0] === CHECK.attributeEvent[0] ) {
+                let eventName = attr.name.slice(1, -1);
+                this.handleElementEventAttribute(target, eventName, attr.value, context);
+            }
+        }
+
+        if ( isTop || !target.__ownComponent ) {
+            RenderService.iterate(target, dom => {
+                this._render(dom, context);
+            });
+        } else {
+            target.__parentContext = context;
+        }
+    }
+
 
     //                             |
-    // normalize (prepare) process |
+    // Normalize (prepare) process |
     //                             |
     normalize(target, variablesMapping = {}) {
         return this._normalize(target, variablesMapping, true);
     }
-    _normalize(target, variablesMapping, isTop ) {
+
+    _normalize(target, variablesMapping, isTop) {
 
         let worker = this.normalizeWorkersBinding[target.nodeType];
         if ( worker ) {
@@ -146,7 +198,7 @@ export class RenderService {
                 let localCtx                = Object.assign({}, ctx);
                 localCtx[anchor.__rules[0]] = source[i];
 
-                let newNode = document.createElement(anchor.__originalDom.tagName);
+                let newNode       = document.createElement(anchor.__originalDom.tagName);
                 newNode.className = anchor.__originalDom.className;
                 newNode.innerHTML = anchor.__originalDom.innerHTML;
                 newNode.__checks  = this.normalize(newNode);
