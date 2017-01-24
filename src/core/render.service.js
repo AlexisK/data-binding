@@ -108,16 +108,17 @@ export class RenderService {
 
     renderWorker_element(target, context, isTop) {
         //console.log(target);
-        for (let i = 0; i < target.attributes.length; i++) {
-            let attr = target.attributes[i];
-            //console.log('\t',attr.name);
-            if ( attr.name[0] === CHECK.attributeEvent[0] ) {
-                let eventName = attr.name.slice(1, -1);
-                this.handleElementEventAttribute(target, eventName, attr.value, context);
-            }
-        }
 
         if ( isTop || !target.__ownComponent ) {
+            for (let i = 0; i < target.attributes.length; i++) {
+                let attr = target.attributes[i];
+                //console.log('\t',attr.name);
+                if ( attr.name[0] === CHECK.attributeEvent[0] ) {
+                    let eventName = attr.name.slice(1, -1);
+                    this.handleElementEventAttribute(target, eventName, attr.value, context);
+                }
+            }
+
             RenderService.iterate(target, dom => {
                 this._render(dom, context);
             });

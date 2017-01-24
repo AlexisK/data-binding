@@ -15,6 +15,14 @@ export class ListComponent {
             {
                 title: 'item 2',
                 value: false
+            },
+            {
+                title: 'item 3',
+                value: true
+            },
+            {
+                title: 'item 4',
+                value: false
             }
         ];
         window.list = this;
