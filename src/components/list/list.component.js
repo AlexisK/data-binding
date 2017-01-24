@@ -25,12 +25,34 @@ export class ListComponent {
                 value: false
             }
         ];
+
+        this.generateItems();
+
         window.list = this;
     }
 
+    generateItems() {
+
+        for ( let i = 100; i --> 0; i-- ) {
+            this.items.push({
+                title: i,
+                value: false
+            });
+        }
+    }
+
     addItem(title) {
+        console.log(title, this);
         this.items.push({
             title, value: false
         });
+    }
+
+    removeItem(item) {
+        let ind = this.items.indexOf(item);
+        console.log(item, ind);
+        if ( ind >= 0 ) {
+            this.items.splice(ind, 1);
+        }
     }
 }

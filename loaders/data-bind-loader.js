@@ -1,5 +1,5 @@
-const fs            = require('fs');
-const path          = require('path');
+const fs   = require('fs');
+const path = require('path');
 
 const re            = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
 const reConstructor = /constructor\(\)\s*\{/;
@@ -30,8 +30,8 @@ function injectToConstructor(classBody, name, params, loader) {
 
     let i = 0;
     for (let check = 1; check && i < afterContent.length; i++) {
-        if ( afterContent[i] === '{' ) {check += 1;}
-        if ( afterContent[i] === '}' ) {check -= 1;}
+        if ( /\{/.test(afterContent[i]) ) {check += 1;}
+        if ( /}/.test(afterContent[i]) ) {check -= 1;}
     }
     i -= 1;
 

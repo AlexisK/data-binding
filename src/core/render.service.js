@@ -1,6 +1,7 @@
 import { breakStringToExec } from "./utils/break-string-to-exec";
 import { evalExpression } from "./utils/eval-expression";
 import { storage } from "./storage.service";
+import { cloneContext } from "./utils/clone-context";
 
 const CHECK = {
     reNameTest        : /this.([\w\d]+)/gi,
@@ -27,8 +28,9 @@ export class RenderService {
             3 : this.normalizeWorker_text.bind(this),
             8 : this.normalizeWorker_comment.bind(this)
         };
-        this.eventHandlersBinding = {
-            'onchange': RenderService.handleEvent_onchange.bind(this)
+        this.eventHandlersBinding    = {
+            'onchange' : RenderService.handleEvent_onchange.bind(this),
+            'onclick'  : RenderService.handleEvent_onclick.bind(this)
         }
     }
 
@@ -65,7 +67,7 @@ export class RenderService {
     handleEvent__universal(target, eventName, expr, ctx) {
         if ( target.__component ) {
             target.__component.subscribeEvent(eventName, ev => {
-                let localCtx = target.__parentContext || ctx;
+                let localCtx          = target.__parentContext || ctx;
                 localCtx[CHECK.event] = ev;
                 evalExpression(localCtx, expr);
             });
@@ -74,6 +76,13 @@ export class RenderService {
 
     static handleEvent_onchange(target, eventName, expr, ctx) {
         target.addEventListener('keyup', ev => {
+            ctx[CHECK.event] = ev;
+            evalExpression(ctx, expr);
+        });
+    }
+
+    static handleEvent_onclick(target, eventName, expr, ctx) {
+        target.addEventListener('click', ev => {
             ctx[CHECK.event] = ev;
             evalExpression(ctx, expr);
         });
@@ -196,7 +205,7 @@ export class RenderService {
             anchor.__ownNodes = [];
             let source        = evalExpression(ctx, anchor.__rules[1]);
             for (let i = 0; i < source.length; i++) {
-                let localCtx                = Object.assign({}, ctx);
+                let localCtx                = cloneContext(ctx);
                 localCtx[anchor.__rules[0]] = source[i];
 
                 let newNode       = document.createElement(anchor.__originalDom.tagName);

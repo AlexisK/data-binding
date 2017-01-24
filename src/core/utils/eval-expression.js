@@ -1,15 +1,28 @@
 const CHECK = {
-    eval              : ['with(this) { return (', '); }']
+    eval         : ['with(this) { return (', '); }'],
+    reUpdateVars : /@update\(([\s\w\d,\-_]+)\);?/gi
 };
+
+let __updateInterval = null;
 
 export function evalExpression(ctx, expr) {
     try {
-        return (new Function(CHECK.eval.join(expr))).call(ctx);
+        let newExpr = expr.replace(CHECK.reUpdateVars, (match, updates) => {
+            clearInterval(__updateInterval);
+            __updateInterval = setTimeout(() => {
+                ctx.__component.updateByVars(updates.split(/\s+,\s*/g));
+            }, 1);
+            return '';
+        });
+
+        return (new Function(CHECK.eval.join(newExpr))).call(ctx);
     } catch (err) {
-        console.warn('DATA_BIND: [Evaluating expression failed]\n\n',err,
+        console.groupCollapsed('DATA_BIND: [Evaluating expression failed]');
+        console.warn(err,
             '\n\n$event:\n', ctx['$event'],
             '\n\nContext:\n', ctx,
             '\n\nExpression:\n', expr);
+        console.groupEnd();
         return CHECK.errorParsing;
     }
 }

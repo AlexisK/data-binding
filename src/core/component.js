@@ -3,9 +3,9 @@ import { subscribeEventLoopUpdate } from "./event-loop-update";
 import { storage } from './storage.service';
 import { renderService } from "./render.service";
 
-
-const reVariables = /\{\{([\s\d\w:'",.\/-_=+~]*)}}/gi;
-const reNameTest  = /this.([\w\d]+)/gi;
+const CHECK = {
+    reNameTest        : /this.([\w\d]+)/gi,
+};
 
 export class Component {
 
@@ -133,8 +133,19 @@ export class Component {
         //}
         if ( this.__checks[key] ) {
             this.__checks[key].forEach(dom => {
-                renderService.render(dom, this._attrs)
+                renderService.render(dom, this._ref)
             });
+        }
+    }
+
+    updateByVars(list) {
+        list.forEach(v => this._updateData(v));
+    }
+
+    updateByVarsInExpression(expr) {
+        let match;
+        while( match = CHECK.reNameTest.exec(expr) ) {
+            this._updateData(match[1]);
         }
     }
 
