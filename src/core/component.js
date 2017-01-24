@@ -1,6 +1,7 @@
-import { iterateDom } from "./iterateDom";
+import { iterateDom } from "./utils/iterate-dom";
 import { subscribeEventLoopUpdate } from "./event-loop-update";
-import {storageService} from './storage.service';
+import { storage } from './storage.service';
+import { renderService } from "./render.service";
 
 
 const reVariables = /\{\{([\s\d\w:'",.\/-_=+~]*)}}/gi;
@@ -67,74 +68,16 @@ export class Component {
                 this._updateData(key, this._ref[key]);
             }
         });
-        console.log(this);
-    }
-
-
-    // processing
-    static _createAnchor(target) {
-        let anchor = document.createComment(target.tagName);
-        target.parentNode.insertBefore(anchor, target);
-        return anchor;
-    }
-
-    static _getDomData(target) {
-        return {
-            tag       : target.tagName.toLowerCase(),
-            className : target.className
-        };
-    }
-
-    static _getForReference(content) {
-        let match = (new RegExp(reNameTest)).exec(content.split(' in ')[1]);
-        return match[1];
+        //console.log(this);
     }
 
 
     _recalcReferences() {
-        this.__checks           = {};
         this.__target.innerHTML = this.__template;
 
-        iterateDom(this.__target, dom => {
-            let ok      = true;
-            let domData = Component._getDomData(dom);
+        this.__checks = renderService.normalize(this.__target);
 
-            for (let i = 0; ok && i < dom.attributes.length; i++) {
-                let attr = dom.attributes[i];
-                if ( attr.specified ) {
-                    //attr.name; attr.value
-
-                    if ( attr.name === '*for' ) {
-                        let anchor      = Component._createAnchor(dom);
-                        anchor._forRule = attr.value;
-                        anchor._domData = domData;
-                        anchor._ownElems = [];
-                        anchor._content = dom.innerHTML;
-
-                        let key = Component._getForReference(attr.value);
-                        this.__checksFor[key] = this.__checksFor[key] || [];
-                        this.__checksFor[key].push(anchor);
-
-                        dom.parentNode.removeChild(dom);
-                        ok = false;
-                    }
-                }
-            }
-            if ( ok ) {
-
-                if ( storageService.component[domData.tag] ) {
-                    let component = new storageService.component[domData.tag]();
-                    component.__component._createSelf(dom);
-                } else {
-                    dom.childNodes.forEach(child => {
-                        if ( child.nodeType === 3 ) {// text
-                            this._checkNodeVariables(child);
-                        }
-                    });
-                }
-            }
-
-        });
+        renderService.render(this.__target, this._attrs);
         this._blankUpdate();
     }
 
@@ -147,53 +90,14 @@ export class Component {
 
     // update process
     _updateData(key, val) {
-        if ( this.__checksFor[key] ) {
-            this.__checksFor[key].forEach(this._renderFor.bind(this._ref));
-        }
+        //if ( this.__checksFor[key] ) {
+        //    this.__checksFor[key].forEach(this._renderFor.bind(this._ref));
+        //}
         if ( this.__checks[key] ) {
-            this.__checks[key].forEach(this._updateNode.bind(this._ref));
-        }
-    }
-
-    _updateNode(target) {
-        target.textContent = target.nativeValue.replace(/{{([\s\d\w:'"\[\],.\/-_=+~]+)}}/gi, (match, ex) => {
-            return eval(ex);
-        });
-    }
-    _renderFor(target) {
-        target._ownElems.forEach(elem => elem.parentNode.removeChild(elem));
-        target._ownElems = [];
-        let [varName, evalFrom] = target._forRule.split(' in ');
-        let source = eval(evalFrom);
-
-
-        for ( let i = 0; i < source.length; i++) {
-            let localVar = source[i];
-
-            let newNode = document.createElement(target._domData.tag);
-            newNode.className = target._domData.className;
-            newNode.innerHTML = target._content.replace(reVariables, (match, ex) => {
-                return eval(ex.replace(varName, 'localVar'));
+            this.__checks[key].forEach(dom => {
+                renderService.render(dom, this._attrs)
             });
-            target.parentNode.insertBefore(newNode, target);
-            target._ownElems.push(newNode);
-
         }
     }
 
-    _checkNodeVariables(target) {
-        let re = new RegExp(reVariables);
-        let match;
-
-        while (match = re.exec(target.textContent)) {
-            let locRe = new RegExp(reNameTest);
-            let locMatch;
-            while (locMatch = locRe.exec(match[1])) {
-                target.nativeValue         = target.textContent;
-                this.__checks[locMatch[1]] = this.__checks[locMatch[1]] || [];
-                this.__checks[locMatch[1]].push(target);
-            }
-
-        }
-    }
 }

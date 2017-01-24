@@ -6,3 +6,4 @@ export class StorageService {
 }
 
 export const storageService = new StorageService();
+export const storage = storageService.data;

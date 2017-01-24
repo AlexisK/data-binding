@@ -1,5 +1,5 @@
-import { iterateDom } from './iterateDom';
-import { storageService } from "./storage.service";
+import { iterateDom } from './utils/iterate-dom';
+import { storage } from "./storage.service";
 
 export class App {
 
@@ -7,9 +7,9 @@ export class App {
         this.params     = params;
         this.components = params.components || [];
 
-        storageService.component = {};
+        storage.component = {};
         this.components.forEach(component => {
-            storageService.component[(new component()).__component.__selector] = component;
+            storage.component[(new component()).__component.__selector] = component;
         });
     }
 
@@ -21,8 +21,8 @@ export class App {
 
         iterateDom(document.body, dom => {
             let tag = dom.tagName.toLowerCase();
-            if ( storageService.component[tag] ) {
-                let component = new storageService.component[tag]();
+            if ( storage.component[tag] ) {
+                let component = new storage.component[tag]();
                 component.__component._createSelf(dom);
             }
         });
