@@ -18,47 +18,49 @@ const CHECK = {
     empty             : ''
 };
 
-export class RenderService {
+export class RenderSession {
+    constructor(component) {
+        this.parentNode  = component.__target;
+        this.rootNode    = document.createDocumentFragment();
+        this.context     = component._ref;
+        this.template    = component.__template;
+        this.checks      = component.__checks;
+        this.isPassive   = false;
+        this.updateables = [];
 
-    constructor() {
-        this.defaultContext = window;
-        this.renderBinding  = {
+        this._renderBinding = {
             text : this._render_text.bind(this),
             tag  : this._render_tag.bind(this)
+        };
+
+    }
+
+    extractVariables(string, value) {
+        for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(string);) {
+            this.checks[match[1]] = this.checks[match[1]] || [];
+            this.checks[match[1]].push(value);
+        }
+    }
+
+    update(params) {
+        if ( params.node && params.node._update ) {
+            params.node._update(params.ctx);
         }
     }
 
 
-    static iterate(parent, callback) {
-        Array.from(parent.childNodes).forEach(callback);
-    }
-
-    processContent(target) {
-        RenderService.iterate(target, dom => {
-            if ( dom.nodeType === 1 ) {
-                let tag = dom.tagName.toLowerCase();
-
-                if ( storage.component[tag] ) {
-                    let component = new storage.component[tag]();
-                    component.__component._createSelf(dom);
-                }
-            }
-        });
-    }
-
-
-    render(target, ctx = this.defaultContext, template = []) {
-        //console.log(target, ctx, template);
-        let aggregator = document.createDocumentFragment();
-        this._render(aggregator, ctx, template, true);
-        target.appendChild(aggregator);
+    render() {
+        this.isPassive = false;
+        this._render(this.rootNode, this.context, this.template, true);
+        this.parentNode.appendChild(this.rootNode);
     }
 
     _render(target, ctx, template, isTop) {
         if ( template.constructor === Array ) {
             template.forEach(tpl => this._render(target, ctx, tpl));
-        } else if ( template.type && this.renderBinding[template.type] ) {
-            this.renderBinding[template.type](target, ctx, template, isTop);
+        } else if ( template.type && this._renderBinding[template.type] ) {
+            target.__rendered = target.__rendered || [];
+            this._renderBinding[template.type](target, ctx, template, isTop);
         } else {
             logException('Failed to render template', {target, ctx, template});
         }
@@ -66,15 +68,27 @@ export class RenderService {
 
     _render_text(target, ctx, template, isTop) {
         if ( template._renderMap ) {
-            let result = [];
+            let node = document.createTextNode('');
+            node._update = (localContext = ctx) => {
+                let result = [];
+                template._renderMap.forEach(val => {
+                    if ( val.constructor === Array ) {
+                        result.push(evalExpression(localContext, val[0]));
+                    } else {
+                        result.push(val)
+                    }
+                });
+                node.textContent = result.join(CHECK.empty);
+            };
+            this.updateables.push(node);
+
             template._renderMap.forEach(val => {
                 if ( val.constructor === Array ) {
-                    result.push(evalExpression(ctx, val[0]));
-                } else {
-                    result.push(val)
+                    this.extractVariables(val[0], {node, ctx});
                 }
             });
-            target.appendChild(document.createTextNode(result.join(CHECK.empty)));
+            target.appendChild(node);
+
         } else {
             target.appendChild(document.createTextNode(template.data));
         }
@@ -125,6 +139,40 @@ export class RenderService {
 
         let component = new storage.component[template._componentSelector]();
         component.__component._createSelf(target);
+    }
+
+}
+
+
+export class RenderService {
+
+    constructor() {
+    }
+
+
+    static iterate(parent, callback) {
+        Array.from(parent.childNodes).forEach(callback);
+    }
+
+    processContent(target) {
+        RenderService.iterate(target, dom => {
+            if ( dom.nodeType === 1 ) {
+                let tag = dom.tagName.toLowerCase();
+
+                if ( storage.component[tag] ) {
+                    let component = new storage.component[tag]();
+                    component.__component._createSelf(dom);
+                }
+            }
+        });
+    }
+
+
+    render(component) {
+        //console.log(target, ctx, template);
+        let session = new RenderSession(component);
+        session.render();
+        return session;
     }
 
 }

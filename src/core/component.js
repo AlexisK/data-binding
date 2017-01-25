@@ -16,6 +16,7 @@ export class Component {
         this._attrs         = {};
         this._hookInterval  = null;
         this._eventWorkers  = {};
+        this._renderSession;
         // these are set with webpack custom loader 'data-bind-loader'
         this.__name         = null;
         this.__selector     = null;
@@ -99,7 +100,10 @@ export class Component {
     }
 
 
-    // triggers
+
+    _forceUpdate() {
+        this._renderSession.updateables.forEach(ref => ref._update());
+    }
     _blankUpdate() {
         Object.keys(this._attrs).forEach(key => {
             if ( key[0] !== '_' ) {
@@ -108,30 +112,10 @@ export class Component {
         });
     }
 
-
-    _recalcReferences() {
-        //this.__target.innerHTML = this.__template;
-
-        renderService.render(this.__target, this._ref, this.__template);
-        this._blankUpdate();
-    }
-
-
-    _createSelf(target) {
-        this.__target      = target;
-        target.__component = this;
-        this._recalcReferences();
-    }
-
-
-    // update process
     _updateData(key) {
-        //if ( this.__checksFor[key] ) {
-        //    this.__checksFor[key].forEach(this._renderFor.bind(this._ref));
-        //}
         if ( this.__checks[key] ) {
-            this.__checks[key].forEach(dom => {
-                renderService.render(dom, this._ref)
+            this.__checks[key].forEach(params => {
+                this._renderSession.update(params);
             });
         }
     }
@@ -147,4 +131,13 @@ export class Component {
         }
     }
 
+    _createSelf(target) {
+        this.__target      = target;
+        target.__component = this;
+        this._recalcReferences();
+    }
+    _recalcReferences() {
+        this._renderSession = renderService.render(this);
+        this._forceUpdate();
+    }
 }
