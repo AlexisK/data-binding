@@ -13,7 +13,9 @@ const CHECK = {
     attributeEvent    : ['(', ')'],
     attributeInput    : ['[', ']'],
     event             : '$event',
-    object            : 'object'
+    index             : '$index',
+    object            : 'object',
+    empty             : ''
 };
 
 export class RenderService {
@@ -47,7 +49,9 @@ export class RenderService {
 
     render(target, ctx = this.defaultContext, template = []) {
         console.log(target, ctx, template);
-        this._render(target, ctx, template);
+        let aggregator = document.createDocumentFragment();
+        this._render(aggregator, ctx, template);
+        target.appendChild(aggregator);
     }
 
     _render(target, ctx, template) {
@@ -61,23 +65,45 @@ export class RenderService {
     }
 
     _render_text(target, ctx, template) {
-        target.appendChild(document.createTextNode(template.data));
+        if ( template._renderMap ) {
+            let result = [];
+            template._renderMap.forEach(val => {
+                if ( val.constructor === Array ) {
+                    result.push(evalExpression(ctx, val[0]));
+                } else {
+                    result.push(val)
+                }
+            });
+            target.appendChild(document.createTextNode(result.join(CHECK.empty)));
+        } else {
+            target.appendChild(document.createTextNode(template.data));
+        }
     }
 
-    _render_tag(target, ctx, template) {
-        let newNode = document.createElement(template.name);
-        Object.keys(template.attribs).forEach(key => {
-            try {
-                newNode.setAttribute(key, template.attribs[key]);
-            } catch (err) {
-                logException('Failed to set attribute ' + key, {
-                    [key] : template.attribs[key],
-                    newNode, target, ctx, template
-                })
+    _render_tag(target, ctx, template, ignoreFor) {
+        if ( template._for && !ignoreFor ) {
+            let source = evalExpression(ctx, template._for[1]);
+            for (let i = 0; i < source.length; i++) {
+                let localCtx               = cloneContext(ctx);
+                localCtx[template._for[0]] = source[i];
+                localCtx[CHECK.index]      = i;
+                this._render_tag(target, localCtx, template, true);
             }
-        });
-        target.appendChild(newNode);
-        this._render(newNode, ctx, template.children);
+        } else {
+            let newNode = document.createElement(template.name);
+            Object.keys(template.attribs).forEach(key => {
+                try {
+                    newNode.setAttribute(key, template.attribs[key]);
+                } catch (err) {
+                    logException('Failed to set attribute ' + key, {
+                        [key] : template.attribs[key],
+                        newNode, target, ctx, template
+                    })
+                }
+            });
+            target.appendChild(newNode);
+            this._render(newNode, ctx, template.children);
+        }
     }
 
 }
