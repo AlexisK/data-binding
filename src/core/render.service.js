@@ -1,8 +1,8 @@
-import { breakStringToExec } from "./utils/break-string-to-exec";
 import { evalExpression } from "./utils/eval-expression";
 import { storage } from "./storage.service";
 import { cloneContext } from "./utils/clone-context";
 import { logException } from "./utils/log-exception";
+import { arrayDiff } from "./utils/array-diff";
 
 const CHECK = {
     reNameTest        : /this.([\w\d]+)/gi,
@@ -15,6 +15,9 @@ const CHECK = {
     event             : '$event',
     index             : '$index',
     object            : 'object',
+    anch              : 'anch',
+    for               : 'for',
+    text              : 'text',
     empty             : ''
 };
 
@@ -35,6 +38,27 @@ export class RenderSession {
 
     }
 
+    createAnchor(target) {
+        let newNode = document.createComment(CHECK.anch);
+        target.appendChild(newNode);
+        return newNode;
+    }
+
+    makeUpdateAble(target, worker) {
+        target._children = [];
+        target._update   = (ctx) => {
+            worker(ctx);
+            target._children.forEach(child => child._update());
+        };
+        for (let parent = target.parentNode; parent; parent = parent._parentNode || parent.parentNode) {
+            if ( parent._update ) {
+                parent._children.push(target);
+                break;
+            }
+        }
+        this.updateables.push(target);
+    }
+
     extractVariables(string, value) {
         for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(string);) {
             this.checks[match[1]] = this.checks[match[1]] || [];
@@ -42,18 +66,19 @@ export class RenderSession {
         }
     }
 
+
     update(params) {
         if ( params.node && params.node._update ) {
             params.node._update(params.ctx);
         }
     }
 
-
     render() {
         this.isPassive = false;
         this._render(this.rootNode, this.context, this.template, true);
         this.parentNode.appendChild(this.rootNode);
     }
+
 
     _render(target, ctx, template, isTop) {
         if ( template.constructor === Array ) {
@@ -69,7 +94,9 @@ export class RenderSession {
     _render_text(target, ctx, template, isTop) {
         if ( template._renderMap ) {
             let node = document.createTextNode('');
-            node._update = (localContext = ctx) => {
+            target.appendChild(node);
+
+            this.makeUpdateAble(node, (localContext = ctx) => {
                 let result = [];
                 template._renderMap.forEach(val => {
                     if ( val.constructor === Array ) {
@@ -79,15 +106,13 @@ export class RenderSession {
                     }
                 });
                 node.textContent = result.join(CHECK.empty);
-            };
-            this.updateables.push(node);
+            });
 
             template._renderMap.forEach(val => {
                 if ( val.constructor === Array ) {
                     this.extractVariables(val[0], {node, ctx});
                 }
             });
-            target.appendChild(node);
 
         } else {
             target.appendChild(document.createTextNode(template.data));
@@ -125,13 +150,25 @@ export class RenderSession {
     }
 
     _render_for(target, ctx, template, isTop) {
-        let source = evalExpression(ctx, template._for[1]);
-        for (let i = 0; i < source.length; i++) {
-            let localCtx               = cloneContext(ctx);
-            localCtx[template._for[0]] = source[i];
-            localCtx[CHECK.index]      = i;
-            this._render_tag(target, localCtx, template, null, true);
-        }
+        let anchor = this.createAnchor(target);
+
+        this.extractVariables(template._for[1], {node : anchor, ctx});
+
+        this.makeUpdateAble(anchor, (updCtx = ctx) => {
+            let collection         = document.createDocumentFragment();
+            collection._parentNode = anchor;
+            let source             = evalExpression(updCtx, template._for[1]);
+            for (let i = 0; i < source.length; i++) {
+                let localCtx               = cloneContext(ctx);
+                localCtx[template._for[0]] = source[i];
+                localCtx[CHECK.index]      = i;
+                this._render_tag(collection, localCtx, template, null, true);
+            }
+
+            target.insertBefore(collection, anchor);
+        });
+
+
     }
 
     _render_component(target, ctx, template, isTop) {
