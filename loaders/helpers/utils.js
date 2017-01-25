@@ -1,8 +1,6 @@
 const fs   = require('fs');
 const path = require('path');
 
-const toSource = require('tosource');
-
 const STR = {
     undefined : 'undefined',
     object    : 'object',
@@ -48,14 +46,4 @@ function iterateObject(target, callback) {
     }
 }
 
-function nodesToString(obj) {
-    iterateObject(obj, ref => {
-        if ( typeof(ref.parent) !== STR.undefined ) { delete ref.parent; }
-        if ( typeof(ref.next) !== STR.undefined ) { delete ref.next; }
-        if ( typeof(ref.prev) !== STR.undefined ) { delete ref.prev; }
-    });
-    return toSource(obj);
-}
-
-
-module.exports = {retrieveJson, formatStr, readFileContent, iterateObject, nodesToString};
+module.exports = {retrieveJson, formatStr, readFileContent, iterateObject};

@@ -110,11 +110,9 @@ export class Component {
 
 
     _recalcReferences() {
-        this.__target.innerHTML = this.__template;
+        //this.__target.innerHTML = this.__template;
 
-        this.__checks = renderService.normalize(this.__target);
-
-        renderService.render(this.__target, this._ref);
+        renderService.render(this.__target, this._ref, this.__template);
         this._blankUpdate();
     }
 

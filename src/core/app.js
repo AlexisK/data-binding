@@ -20,8 +20,10 @@ export class App {
         //    (new component()).__component.test();
         //});
 
-        renderService.normalize(document.body);
-        renderService.render(document.body);
+        //renderService.normalize(document.body);
+        //renderService.render(document.body);
+
+        renderService.processContent(document.body);
 
         //iterateDom(document.body, dom => {
         //    let tag = dom.tagName.toLowerCase();
