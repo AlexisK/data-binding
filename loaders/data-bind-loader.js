@@ -1,12 +1,22 @@
 const fs   = require('fs');
 const path = require('path');
 
-const utils = require("./helpers/utils");
+const utils           = require("./helpers/utils");
 const compileTemplate = require('./helpers/compile-template');
 
-const re            = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
+const reTemplateAll = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
+const reTemplateKey = /@Component\({[\s\w\d:'",.\-/\\]+selector\s*:\s*'([\s\w\d\-[\]./\\]+)'/gi;
 const reConstructor = /constructor\(\)\s*\{/;
 
+
+const knownSelectors = [];
+function retrieveSelectors(html) {
+    for (let match, re = new RegExp(reTemplateKey); match = re.exec(html);) {
+        if ( knownSelectors.indexOf(match[1]) === -1 ) {
+            knownSelectors.push(match[1]);
+        }
+    }
+}
 
 function injectToConstructor(classBody, name, params, loader) {
     let match         = new RegExp(reConstructor).exec(classBody);
@@ -29,21 +39,37 @@ function injectToConstructor(classBody, name, params, loader) {
 \nthis.__component.__name=${utils.formatStr(name)};\
 \nthis.__component.__selector=${utils.formatStr(params.selector)};\
 \nthis.__component.__updateMethod=${utils.formatStr(params.update || 'property')};\
-\nthis.__component.__template=${compileTemplate(utils.readFileContent(loader.request, params.template))};\n\
+\nthis.__component.__template=${compileTemplate(utils.readFileContent(loader.request, params.template), {
+        selectors : knownSelectors
+    })};\n\
 `, constructorContent, '\nthis.__component.init(this);', afterContent].join('');
+}
+
+function prepareModified(source) {
+    return new Promise(resolve => {
+        retrieveSelectors(source);
+
+        setTimeout(() => {
+            let result = source.replace(reTemplateAll, (match, type, params, name, classBody) => {
+                params = utils.retrieveJson(params);
+
+                return [`export class ${name} {`, injectToConstructor(classBody, name, params, this), '}'].join('');
+            });
+            resolve(result);
+        }, 1);
+    });
 }
 
 module.exports = function (source, map) {
     // source - js code
     //console.log(this.request);
+    const callback = this.async();
 
-    let modifiedSource = source.replace(re, (match, type, params, name, classBody) => {
-        params = utils.retrieveJson(params);
+    prepareModified.call(this, source).then(modifiedSource => {
+        //console.log(this.request);
+        //console.log(modifiedSource);
 
-        return [`export class ${name} {`, injectToConstructor(classBody, name, params, this), '}'].join('');
+        callback(null, modifiedSource, map);
     });
 
-    //console.log(modifiedSource);
-
-    this.callback(null, modifiedSource, map);
 };

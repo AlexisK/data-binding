@@ -1,5 +1,7 @@
+import { logException } from "./log-exception";
 const CHECK = {
     eval         : ['with(this) { return (', '); }'],
+    errorParsing : '{{ERR}}',
     reUpdateVars : /@update\(([\s\w\d,\-_]+)\);?/gi
 };
 
@@ -17,12 +19,10 @@ export function evalExpression(ctx, expr) {
 
         return (new Function(CHECK.eval.join(newExpr))).call(ctx);
     } catch (err) {
-        console.groupCollapsed('DATA_BIND: [Evaluating expression failed]');
-        console.warn(err,
-            '\n\n$event:\n', ctx['$event'],
-            '\n\nContext:\n', ctx,
-            '\n\nExpression:\n', expr);
-        console.groupEnd();
+        logException('Evaluating expression failed', {
+            '$event' : ctx['$event'],
+            ctx, expr
+        });
         return CHECK.errorParsing;
     }
 }

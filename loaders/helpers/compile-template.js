@@ -50,7 +50,9 @@ function checkRenderContent(obj) {
 }
 
 // main processor
-function nodesToString(obj) {
+function nodesToString(obj, params) {
+    let knownSelectors = params.selectors || [];
+
     utils.iterateObject(obj, ref => {
         if ( ref._element ) {
             let data = ref._element;
@@ -63,6 +65,9 @@ function nodesToString(obj) {
 
         if ( ref.type === STR.tag ) {
             checkFor(ref);
+            if ( knownSelectors.indexOf(ref.name) >= 0 ) {
+                ref._componentSelector = ref.name;
+            }
         }
         if ( ref.type === STR.text ) {
             checkRenderContent(ref);
@@ -72,11 +77,11 @@ function nodesToString(obj) {
 }
 
 // exporting
-module.exports = function (html) {
-    let parsed = nodesToString(HL.Node.fromString(html));
+module.exports = function (html, params) {
+    let parsed = nodesToString(HL.Node.fromString(html), params);
 
-    console.log('--TPL:\n\n', html, '\n');
-    console.log('--NODE:\n\n', parsed, '\n');
+    //console.log('--TPL:\n\n', html, '\n');
+    //console.log('--NODE:\n\n', parsed, '\n');
 
     //return utils.formatStr(html);
     return parsed;
