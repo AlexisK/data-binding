@@ -1,26 +1,12 @@
 const fs   = require('fs');
 const path = require('path');
 
+const utils = require("./helpers/utils");
+const compileTemplate = require('./helpers/compile-template');
+
 const re            = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
 const reConstructor = /constructor\(\)\s*\{/;
 
-function formatStr(str) {
-    return ["'", str.trim().replace(/'/g, "\\'").replace(/(?:\r?\n|\r)\s*/g, ' '), "'"].join('');
-}
-
-function retrieveJson(str) {
-    try {
-        return eval('x = ' + str);
-    } catch (err) {
-        return {};
-    }
-}
-
-function readFileContent(reqPath, tplPath) {
-    let resp = fs.readFileSync(path.resolve(reqPath.split('!')[1].split('/').slice(0, -1).join('/'), tplPath), 'utf8');
-    //console.log(resp);
-    return resp;
-}
 
 function injectToConstructor(classBody, name, params, loader) {
     let match         = new RegExp(reConstructor).exec(classBody);
@@ -40,10 +26,10 @@ function injectToConstructor(classBody, name, params, loader) {
 
     return [beforeContent, `\
 \nthis.__component = new Component();\
-\nthis.__component.__name=${formatStr(name)};\
-\nthis.__component.__selector=${formatStr(params.selector)};\
-\nthis.__component.__updateMethod=${formatStr(params.update || 'property')};\
-\nthis.__component.__template=${formatStr(readFileContent(loader.request, params.template))};\n\
+\nthis.__component.__name=${utils.formatStr(name)};\
+\nthis.__component.__selector=${utils.formatStr(params.selector)};\
+\nthis.__component.__updateMethod=${utils.formatStr(params.update || 'property')};\
+\nthis.__component.__template=${compileTemplate(utils.readFileContent(loader.request, params.template))};\n\
 `, constructorContent, '\nthis.__component.init(this);', afterContent].join('');
 }
 
@@ -52,7 +38,7 @@ module.exports = function (source, map) {
     //console.log(this.request);
 
     let modifiedSource = source.replace(re, (match, type, params, name, classBody) => {
-        params = retrieveJson(params);
+        params = utils.retrieveJson(params);
 
         return [`export class ${name} {`, injectToConstructor(classBody, name, params, this), '}'].join('');
     });
