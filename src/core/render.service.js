@@ -191,6 +191,7 @@ export class RenderSession {
                     let lCtx = cloneContext(ctx);
                     lCtx['$event'] = val;
                     evalExpression(lCtx, template._bindings[key]);
+                    this._component.updateByVars(template._bindVars[key]);
                 });
             });
         }

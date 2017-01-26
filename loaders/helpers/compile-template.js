@@ -32,8 +32,20 @@ function checkFor(obj) {
 function extractBindings(obj) {
     Object.keys(obj.attribs).forEach(key => {
         if ( key[0] === CHECK.attributeBindingStart && key[key.length - 1] === CHECK.attributeBindingEnd ) {
-            obj._bindings                   = obj._bindings || {};
-            obj._bindings[key.slice(1, -1)] = obj.attribs[key];
+            let clearKey = key.slice(CHECK.attributeBindingStart.length, -CHECK.attributeBindingEnd.length);
+
+            obj._bindings           = obj._bindings || {};
+            obj._bindings[clearKey] = obj.attribs[key];
+
+            obj._bindVars           = obj._bindVars || {};
+            obj._bindVars[clearKey] = [];
+
+            for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(obj.attribs[key]);) {
+                if ( obj._bindVars[clearKey].indexOf(match[1]) === -1 ) {
+                    obj._bindVars[clearKey].push(match[1]);
+                }
+            }
+
             delete obj.attribs[key];
         }
     });
@@ -51,7 +63,7 @@ function checkRenderContent(obj) {
                 if ( ind === -1 ) { ind = str.length; }
                 let ex = str.slice(i, ind);
 
-                for (let match; match = CHECK.reNameTest.exec(ex);) {
+                for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(ex);) {
                     if ( vars.indexOf(match[1]) === -1 ) {
                         vars.push(match[1]);
                     }
