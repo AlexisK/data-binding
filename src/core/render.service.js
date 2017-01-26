@@ -203,6 +203,8 @@ export class RenderService {
                 if ( storage.component[tag] ) {
                     let component = new storage.component[tag]();
                     component.__component._createSelf(dom);
+                } else {
+                    this.processContent(dom);
                 }
             }
         });

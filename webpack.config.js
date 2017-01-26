@@ -57,7 +57,7 @@ module.exports = {
             {test : /\.css$/, loaders : ['to-string-loader', 'css-loader']},
             {
                 test    : /\.scss$/,
-                loaders : ['style-loader', 'css-loader', 'sass-loader?includePaths[]=' + [root('src', 'app_styles')]],
+                loaders : ['style-loader', 'css-loader', 'sass-loader?includePaths[]=' + [root('src', 'app_styles', 'globals')]],
                 exclude : /node_modules/,
             },
             {

@@ -1,0 +1,10 @@
+@import "./color";
+@import "./shadow";
+
+@mixin widget-1() {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff;
+  color: $grey-7;
+  @include shadow-1;
+}

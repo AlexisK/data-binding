@@ -1,3 +1,10 @@
-.list {
-  float: left;
+@import "global";
+
+.db-list {
+  @include widget-1;
+
+  .list {
+    width: 50%;
+    float: left;
+  }
 }

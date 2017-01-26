@@ -1,11 +1,16 @@
-<div class="list">
-    <div class="item" *for="item in this.items">
-        <input type="checkbox" [checked]="item.value" />
-        <strong>Item with title: >{{item.title}}< title was there!</strong>
+<div class="db-list">
+    <div class="list">
+        <div class="item" *for="item in this.items">
+            <input type="checkbox" [checked]="item.value"/>
+            <strong>Item with title: >{{item.title}}< title was there!</strong>
+        </div>
     </div>
-    <div class="item" *for="item in this.items">
-        <list-item [value]="item.value" [title]="item.title" (delete)="@update(items); removeItem(item)"></list-item>
-    </div>
+    <div class="list">
+        <div class="item" *for="item in this.items">
+            <list-item [value]="item.value" [title]="item.title"
+                       (delete)="@update(items); removeItem(item)"></list-item>
+        </div>
 
+    </div>
+    <list-input (onsubmit)="addItem($event)"></list-input>
 </div>
-<list-input (onsubmit)="addItem($event)"></list-input>

@@ -1,0 +1,5 @@
+@import "./color";
+
+@mixin shadow-1() {
+  box-shadow: 0 2px 4px $grey-3;
+}

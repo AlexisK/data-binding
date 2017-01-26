@@ -1,0 +1,10 @@
+@import "../globals/font";
+
+body {
+  font-family: arial, sans-serif;
+  @include font-normal;
+}
+
+h1, h2, h3 {
+  @include font-header;
+}
