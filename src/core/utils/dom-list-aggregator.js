@@ -80,6 +80,7 @@ window.DomListAggregator = DomListAggregator;
 /*
  let anchor = document.createComment('anchor_1');
  document.body.appendChild(anchor);
+
  let parent = new DomListAggregator({anchor,
  onCreate: data => {
  console.log('Create with: ', data);
