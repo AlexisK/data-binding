@@ -27,7 +27,8 @@ function formatStr(str) {
 }
 
 function getTemplatePath(reqPath, tplPath) {
-    return path.resolve(reqPath.split(STR.mark)[1].split(STR.slash).slice(0, -1).join(STR.slash), tplPath)
+    let parts = reqPath.split(STR.mark);
+    return path.resolve(parts[parts.length - 1].split(STR.slash).slice(0, -1).join(STR.slash), tplPath)
 }
 
 function readFileContent(filePath) {

@@ -21,4 +21,11 @@ a, img {
 .wrapper {
   max-width: 990px;
   margin: 0 auto;
+
+  > h1 {
+    padding: 40px 0 0 0;
+    margin-bottom: 40px;
+    border-bottom: 2px solid $grey-4;
+    color: $grey-6;
+  }
 }

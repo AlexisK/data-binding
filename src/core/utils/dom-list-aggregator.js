@@ -16,7 +16,7 @@ export class DomListAggregator {
     }
 
     setAnchor(anchor) {
-        this.anchor = anchor;
+        this.anchor                  = anchor;
         this.rootElement._parentNode = this.anchor;
     }
 
@@ -48,13 +48,16 @@ export class DomListAggregator {
             if ( ind >= 0 ) {
                 this._oldList.splice(ind, 1);
                 newNode = this._domItems.splice(ind, 1)[0];
+                this.rootElement.appendChild(newNode);
             } else {
-                newNode = this._onCreate(data, i);
+                newNode             = this._onCreate(data, i);
                 newNode._parentNode = this.rootElement;
+                if ( !newNode.parentNode ) {
+                    this.rootElement.appendChild(newNode);
+                }
             }
 
             newDomItems.push(newNode);
-            this.rootElement.appendChild(newNode);
             this._onInsert(newNode, data);
         });
 
@@ -78,13 +81,13 @@ window.DomListAggregator = DomListAggregator;
  let anchor = document.createComment('anchor_1');
  document.body.appendChild(anchor);
  let parent = new DomListAggregator({anchor,
-     onCreate: data => {
-         console.log('Create with: ', data);
-         let newNode = document.createElement('h2');
-         newNode.textContent = data.toUpperCase();
-         return newNode;
-     },
-     onDelete: node => console.log('Deleting: ', node)
+ onCreate: data => {
+ console.log('Create with: ', data);
+ let newNode = document.createElement('h2');
+ newNode.textContent = data.toUpperCase();
+ return newNode;
+ },
+ onDelete: node => console.log('Deleting: ', node)
  });
 
  parent.fetch(['Hello', 'ololo', 'qweqwe', 'nana']);

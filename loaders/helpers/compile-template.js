@@ -4,15 +4,20 @@ const utils    = require('./utils');
 
 
 const STR = {
-    undefined : 'undefined',
-    checkFor  : '*for',
-    tag       : 'tag',
-    text      : 'text'
+    undefined  : 'undefined',
+    checkFor   : '*for',
+    tag        : 'tag',
+    text       : 'text'
 };
 
 const CHECK = {
-    renderContentStart : '{{',
-    renderContentEnd   : '}}'
+    reNameTest : /this.([\w\d]+)/gi,
+    renderContentStart    : '{{',
+    renderContentEnd      : '}}',
+    attributeBindingStart : '(',
+    attributeBindingEnd   : '(',
+    attributeInputStart   : '[',
+    attributeInputEnd     : ']'
 };
 
 
@@ -24,16 +29,34 @@ function checkFor(obj) {
     }
 }
 
+function extractBindings(obj) {
+    Object.keys(obj.attribs).forEach(key => {
+        if ( key[0] === CHECK.attributeBindingStart && key[key.length - 1] === CHECK.attributeBindingEnd ) {
+            obj._bindings = obj._bindings || [];
+            obj._bindings.push([key.slice(1, -1), obj.attribs[key]]);
+            delete obj.attribs[key];
+        }
+    });
+}
+
 function checkRenderContent(obj) {
     if ( obj.data && obj.data.indexOf(CHECK.renderContentStart) >= 0 ) {
         let parseMap = [];
-        let str = obj.data;
+        let str      = obj.data;
+        let vars = [];
 
         for (let i = 0, mode = false; i < str.length;) {
             if ( mode ) {
                 let ind = str.indexOf(CHECK.renderContentEnd, i);
                 if ( ind === -1 ) { ind = str.length; }
                 let ex = str.slice(i, ind);
+
+                for (let match; match = CHECK.reNameTest.exec(ex); ) {
+                    if ( vars.indexOf(match[1]) === -1 ) {
+                        vars.push(match[1]);
+                    }
+                }
+
                 parseMap.push(ex.split(';'));
                 i = ind + CHECK.renderContentEnd.length;
             } else {
@@ -46,11 +69,12 @@ function checkRenderContent(obj) {
         }
 
         obj._renderMap = parseMap;
+        obj._renderVars = vars;
     }
 }
 
 const replacementKeys = {
-    class: 'className'
+    class : 'className'
 };
 function replaceAttrKeys(key) {
     return replacementKeys[key] || key;

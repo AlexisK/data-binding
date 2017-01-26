@@ -38,6 +38,7 @@ export class Component {
     }
 
     emit(key, val) {
+        console.log('EMIT!', key, val);
         if ( this._eventWorkers[key] ) {
             this._eventWorkers[key].forEach(worker => {
                 worker(val);

@@ -69,6 +69,15 @@ export class RenderSession {
         }
     }
 
+    saveVariables(list, val) {
+        if ( list ) {
+            list.forEach(key => {
+                this.checks[key] = this.checks[key] || [];
+                this.checks[key].push(val);
+            });
+        }
+    }
+
     update(params) {
         if ( params.node && params.node._update ) {
             //let anchor =  document.createComment(CHECK.anch);
@@ -116,11 +125,7 @@ export class RenderSession {
                 node.textContent = result.join(CHECK.empty);
             });
 
-            template._renderMap.forEach(val => {
-                if ( val.constructor === Array ) {
-                    this.extractVariables(val[0], {node, ctx});
-                }
-            });
+            this.saveVariables(template._renderVars, {node, ctx});
 
         } else {
             target.appendChild(document.createTextNode(template.data));
@@ -172,6 +177,8 @@ export class RenderSession {
 
     _render_component(target, ctx, template, isTop) {
         if ( isTop ) { return 0; }
+
+        //console.log(template);
 
         let component = new storage.component[template._componentSelector]();
         component.__component._createSelf(target, true);
