@@ -1,4 +1,4 @@
-import { logException } from "./log-exception";
+import { logWarning } from "./log-exception";
 const CHECK = {
     eval         : ['with(this) { return (', '); }'],
     errorParsing : '{{ERR}}',
@@ -19,7 +19,7 @@ export function evalExpression(ctx, expr) {
 
         return (new Function(CHECK.eval.join(newExpr))).call(ctx);
     } catch (err) {
-        logException('Evaluating expression failed', {
+        logWarning('Evaluating expression failed', {
             '$event' : ctx['$event'],
             ctx, expr
         });

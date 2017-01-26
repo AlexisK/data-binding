@@ -10,7 +10,7 @@ export class ArrayDiff {
     compare(arr, onNew, onDelete) {
         let saved = this.saved.slice();
         let a = 0, s = 0, gind = 0;
-        let testArr = from.slice();
+        let testArr = saved.slice(); // performance hit!
 
         for ( ; a < arr.length && s < saved.length; ) {
             if (arr[a] !== saved[s] ) {

@@ -49,6 +49,15 @@ function checkRenderContent(obj) {
     }
 }
 
+function convertAttribs(ref) {
+    let result = [];
+
+    Object.keys(ref.attribs).forEach(key => {
+        result.push([key, ref.attribs[key]]);
+    });
+    ref.attribs = result;
+}
+
 // main processor
 function nodesToString(obj, params) {
     let knownSelectors = params.selectors || [];
@@ -68,6 +77,7 @@ function nodesToString(obj, params) {
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;
             }
+            convertAttribs(ref);
         }
         if ( ref.type === STR.text ) {
             checkRenderContent(ref);

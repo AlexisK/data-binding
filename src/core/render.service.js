@@ -1,8 +1,9 @@
 import { evalExpression } from "./utils/eval-expression";
 import { storage } from "./storage.service";
 import { cloneContext } from "./utils/clone-context";
-import { logException } from "./utils/log-exception";
-import { arrayDiff } from "./utils/array-diff";
+import { logWarning, logException } from "./utils/log-exception";
+import { ArrayDiff } from "./utils/array-diff";
+import { DomListAggregator } from "./utils/dom-list-aggregator";
 
 const CHECK = {
     reNameTest        : /this.([\w\d]+)/gi,
@@ -25,7 +26,7 @@ export class RenderSession {
     constructor(component) {
         this.parentNode  = component.__target;
         this.rootNode    = document.createDocumentFragment();
-        this.context     = component._ref;
+        this.context     = component._attrs;
         this.template    = component.__template;
         this.checks      = component.__checks;
         this.isPassive   = false;
@@ -121,26 +122,26 @@ export class RenderSession {
 
     _render_tag(target, ctx, template, isTop, ignoreFor) {
         if ( template._for && !ignoreFor ) {
-            this._render_for(target, ctx, template);
-            return 0;
+            return this._render_for(target, ctx, template);
         }
         if ( template._componentSelector ) {
-            this._render_component(target, ctx, template, isTop);
-            return 0;
+            return this._render_component(target, ctx, template, isTop);
         }
 
         let newNode = this._render_element(target, ctx, template, isTop);
         this._render(newNode, ctx, template.children);
+
+        return newNode;
     }
 
     _render_element(target, ctx, template, isTop) {
         let newNode = document.createElement(template.name);
-        Object.keys(template.attribs).forEach(key => {
+        template.attribs.forEach(pair => {
             try {
-                newNode.setAttribute(key, template.attribs[key]);
+                newNode.setAttribute(pair[0], pair[1]);
             } catch (err) {
-                logException('Failed to set attribute ' + key, {
-                    [key] : template.attribs[key],
+                logWarning('Failed to set attribute ' + pair[0], {
+                    [pair[0]] : pair[1],
                     newNode, target, ctx, template
                 })
             }
@@ -150,24 +151,24 @@ export class RenderSession {
     }
 
     _render_for(target, ctx, template, isTop) {
-        let anchor = this.createAnchor(target);
+        let anchor     = this.createAnchor(target);
+        let collection = new DomListAggregator({
+            anchor,
+            onCreate : val => {
+                let localCtx = cloneContext(ctx);
 
+                localCtx[template._for[0]] = val;
+                //console.log(collection.rootElement, localCtx, template);
+                return this._render_tag(collection.rootElement, localCtx, template, null, true);
+            },
+            onDelete : this._destroy.bind(this)
+        });
         this.extractVariables(template._for[1], {node : anchor, ctx});
 
         this.makeUpdateAble(anchor, (updCtx = ctx) => {
-            let collection         = document.createDocumentFragment();
-            collection._parentNode = anchor;
-            let source             = evalExpression(updCtx, template._for[1]);
-            for (let i = 0; i < source.length; i++) {
-                let localCtx               = cloneContext(ctx);
-                localCtx[template._for[0]] = source[i];
-                localCtx[CHECK.index]      = i;
-                this._render_tag(collection, localCtx, template, null, true);
-            }
-
-            target.insertBefore(collection, anchor);
+            let source = evalExpression(updCtx, template._for[1]);
+            collection.fetch(source);
         });
-
 
     }
 
@@ -178,8 +179,12 @@ export class RenderSession {
         component.__component._createSelf(target);
     }
 
-}
+    _destroy(node) {
+        // TODO: clean-up memory and relations
+        node.parentNode.removeChild(node);
+    }
 
+}
 
 
 export class RenderService {
