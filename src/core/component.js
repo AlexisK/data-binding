@@ -26,6 +26,7 @@ export class Component {
 
     init(ref) {
         this._ref        = ref;
+        this._attrs.__proto__ = ref;
         this.__checks    = {};
         this.__checksFor = {};
         this._ref.emit   = this.emit.bind(this);
@@ -33,6 +34,7 @@ export class Component {
     }
 
     subscribeEvent(name, worker) {
+        //console.log(name, '\n', this);
         this._eventWorkers[name] = this._eventWorkers[name] || [];
         this._eventWorkers[name].push(worker)
     }

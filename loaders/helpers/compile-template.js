@@ -4,18 +4,18 @@ const utils    = require('./utils');
 
 
 const STR = {
-    undefined  : 'undefined',
-    checkFor   : '*for',
-    tag        : 'tag',
-    text       : 'text'
+    undefined : 'undefined',
+    checkFor  : '*for',
+    tag       : 'tag',
+    text      : 'text'
 };
 
 const CHECK = {
-    reNameTest : /this.([\w\d]+)/gi,
+    reNameTest            : /this.([\w\d]+)/gi,
     renderContentStart    : '{{',
     renderContentEnd      : '}}',
     attributeBindingStart : '(',
-    attributeBindingEnd   : '(',
+    attributeBindingEnd   : ')',
     attributeInputStart   : '[',
     attributeInputEnd     : ']'
 };
@@ -32,8 +32,8 @@ function checkFor(obj) {
 function extractBindings(obj) {
     Object.keys(obj.attribs).forEach(key => {
         if ( key[0] === CHECK.attributeBindingStart && key[key.length - 1] === CHECK.attributeBindingEnd ) {
-            obj._bindings = obj._bindings || [];
-            obj._bindings.push([key.slice(1, -1), obj.attribs[key]]);
+            obj._bindings                   = obj._bindings || {};
+            obj._bindings[key.slice(1, -1)] = obj.attribs[key];
             delete obj.attribs[key];
         }
     });
@@ -43,7 +43,7 @@ function checkRenderContent(obj) {
     if ( obj.data && obj.data.indexOf(CHECK.renderContentStart) >= 0 ) {
         let parseMap = [];
         let str      = obj.data;
-        let vars = [];
+        let vars     = [];
 
         for (let i = 0, mode = false; i < str.length;) {
             if ( mode ) {
@@ -51,7 +51,7 @@ function checkRenderContent(obj) {
                 if ( ind === -1 ) { ind = str.length; }
                 let ex = str.slice(i, ind);
 
-                for (let match; match = CHECK.reNameTest.exec(ex); ) {
+                for (let match; match = CHECK.reNameTest.exec(ex);) {
                     if ( vars.indexOf(match[1]) === -1 ) {
                         vars.push(match[1]);
                     }
@@ -68,7 +68,7 @@ function checkRenderContent(obj) {
             mode = !mode;
         }
 
-        obj._renderMap = parseMap;
+        obj._renderMap  = parseMap;
         obj._renderVars = vars;
     }
 }
@@ -108,6 +108,7 @@ function nodesToString(obj, params) {
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;
             }
+            extractBindings(ref);
             convertAttribs(ref);
         }
         if ( ref.type === STR.text ) {

@@ -4,6 +4,7 @@ import { cloneContext } from "./utils/clone-context";
 import { logWarning, logException } from "./utils/log-exception";
 import { ArrayDiff } from "./utils/array-diff";
 import { DomListAggregator } from "./utils/dom-list-aggregator";
+import { domEventHandlerService } from './dom-event-handler.service';
 
 const CHECK = {
     reNameTest        : /this.([\w\d]+)/gi,
@@ -24,6 +25,7 @@ const CHECK = {
 
 export class RenderSession {
     constructor(component) {
+        this._component  = component;
         this.parentNode  = component.__target;
         this.rootNode    = document.createDocumentFragment();
         this.context     = component._attrs;
@@ -143,6 +145,8 @@ export class RenderSession {
         let newNode = this._render_element(target, ctx, template, isTop);
         this._render(newNode, ctx, template.children);
 
+        domEventHandlerService.subscribeDom(newNode, this._component._ref, template);
+
         return newNode;
     }
 
@@ -178,17 +182,25 @@ export class RenderSession {
     _render_component(target, ctx, template, isTop) {
         if ( isTop ) { return 0; }
 
-        //console.log(template);
-
         let component = new storage.component[template._componentSelector]();
         component.__component._createSelf(target, true);
+
+        if ( template._bindings ) {
+            Object.keys(template._bindings).forEach(key => {
+                component.__component.subscribeEvent(key, (val) => {
+                    let lCtx = cloneContext(ctx);
+                    lCtx['$event'] = val;
+                    evalExpression(lCtx, template._bindings[key]);
+                });
+            });
+        }
     }
 
     _destroy(node) {
         // TODO: clean-up memory and relations
         try {
             node.parentNode.removeChild(node);
-        } catch(err) {
+        } catch (err) {
             logWarning('Failed to remove node from DOM', {node});
         }
     }
