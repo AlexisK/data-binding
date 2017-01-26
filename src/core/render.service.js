@@ -32,6 +32,8 @@ export class RenderSession {
         this.isPassive   = false;
         this.updateables = [];
 
+        this._insertInterval = null;
+
         this._renderBinding = {
             text : this._render_text.bind(this),
             tag  : this._render_tag.bind(this)
@@ -67,15 +69,20 @@ export class RenderSession {
         }
     }
 
-
     update(params) {
         if ( params.node && params.node._update ) {
+            //let anchor =  document.createComment(CHECK.anch);
+            //params.node.parentNode.insertBefore(anchor, params.node);
+            //params.node.parentNode.removeChild(params.node);
             params.node._update(params.ctx);
+            //params.node.parentNode.insertBefore(params.node, anchor);
+            //params.node.parentNode.removeChild(anchor);
         }
     }
 
-    render() {
+    render(isChild) {
         this.isPassive = false;
+        this.rootNode  = document.createDocumentFragment();
         this._render(this.rootNode, this.context, this.template, true);
         this.parentNode.appendChild(this.rootNode);
     }
@@ -136,16 +143,7 @@ export class RenderSession {
 
     _render_element(target, ctx, template, isTop) {
         let newNode = document.createElement(template.name);
-        template.attribs.forEach(pair => {
-            try {
-                newNode.setAttribute(pair[0], pair[1]);
-            } catch (err) {
-                logWarning('Failed to set attribute ' + pair[0], {
-                    [pair[0]] : pair[1],
-                    newNode, target, ctx, template
-                })
-            }
-        });
+        template.attribs.forEach(pair => newNode[pair[0]] = pair[1]);
         target.appendChild(newNode);
         return newNode;
     }
@@ -176,7 +174,7 @@ export class RenderSession {
         if ( isTop ) { return 0; }
 
         let component = new storage.component[template._componentSelector]();
-        component.__component._createSelf(target);
+        component.__component._createSelf(target, true);
     }
 
     _destroy(node) {
@@ -211,10 +209,10 @@ export class RenderService {
     }
 
 
-    render(component) {
+    render(component, isChild) {
         //console.log(target, ctx, template);
         let session = new RenderSession(component);
-        session.render();
+        session.render(isChild);
         return session;
     }
 

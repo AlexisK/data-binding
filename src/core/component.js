@@ -131,13 +131,13 @@ export class Component {
         }
     }
 
-    _createSelf(target) {
+    _createSelf(target, isChild) {
         this.__target      = target;
         target.__component = this;
-        this._recalcReferences();
+        this._recalcReferences(isChild);
     }
-    _recalcReferences() {
-        this._renderSession = renderService.render(this);
+    _recalcReferences(isChild) {
+        this._renderSession = renderService.render(this, isChild);
         this._forceUpdate();
     }
 }
