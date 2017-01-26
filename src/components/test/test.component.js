@@ -1,4 +1,5 @@
 import { Component } from "core/component";
+require('./test.component.scss');
 
 @Component({
     selector : 'test',

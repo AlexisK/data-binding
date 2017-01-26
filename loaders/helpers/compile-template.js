@@ -49,11 +49,18 @@ function checkRenderContent(obj) {
     }
 }
 
+const replacementKeys = {
+    class: 'className'
+};
+function replaceAttrKeys(key) {
+    return replacementKeys[key] || key;
+}
+
 function convertAttribs(ref) {
     let result = [];
 
     Object.keys(ref.attribs).forEach(key => {
-        result.push([key, ref.attribs[key]]);
+        result.push([replaceAttrKeys(key), ref.attribs[key]]);
     });
     ref.attribs = result;
 }

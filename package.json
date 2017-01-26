@@ -19,11 +19,15 @@
   },
   "homepage": "https://github.com/AlexisK/data-binding#readme",
   "devDependencies": {
+    "css-loader": "^0.26.1",
     "fs": "0.0.1-security",
     "html-webpack-plugin": "^2.26.0",
     "node-html-light": "^0.6.0",
+    "node-sass": "^4.3.0",
     "path": "^0.12.7",
     "raw-loader": "^0.5.1",
+    "sass-loader": "^4.1.1",
+    "style-loader": "^0.13.1",
     "tosource": "^1.0.0",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^1.16.2"

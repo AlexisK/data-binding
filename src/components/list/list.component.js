@@ -1,5 +1,7 @@
 import { Component } from "core/component";
 
+require('./list.component.scss');
+
 @Component({
     selector: 'list',
     template: './list.component.html',

@@ -26,8 +26,12 @@ function formatStr(str) {
     return [STR.q, str.trim().replace(/'/g, "\\'").replace(/(?:\r?\n|\r)\s*/g, STR.space), STR.q].join(STR.empty);
 }
 
-function readFileContent(reqPath, tplPath) {
-    let resp = fs.readFileSync(path.resolve(reqPath.split(STR.mark)[1].split(STR.slash).slice(0, -1).join(STR.slash), tplPath), STR.utf);
+function getTemplatePath(reqPath, tplPath) {
+    return path.resolve(reqPath.split(STR.mark)[1].split(STR.slash).slice(0, -1).join(STR.slash), tplPath)
+}
+
+function readFileContent(filePath) {
+    let resp = fs.readFileSync(filePath, STR.utf);
     //console.log(resp);
     return resp;
 }
@@ -46,4 +50,4 @@ function iterateObject(target, callback) {
     }
 }
 
-module.exports = {retrieveJson, formatStr, readFileContent, iterateObject};
+module.exports = {retrieveJson, formatStr, getTemplatePath, readFileContent, iterateObject};

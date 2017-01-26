@@ -34,12 +34,15 @@ function injectToConstructor(classBody, name, params, loader) {
     let constructorContent = afterContent.slice(0, i);
     afterContent           = afterContent.slice(i);
 
+    let templatePath = utils.getTemplatePath(loader.request, params.template);
+    loader.addDependency(templatePath);
+
     return [beforeContent, `\
 \nthis.__component = new Component();\
 \nthis.__component.__name=${utils.formatStr(name)};\
 \nthis.__component.__selector=${utils.formatStr(params.selector)};\
 \nthis.__component.__updateMethod=${utils.formatStr(params.update || 'property')};\
-\nthis.__component.__template=${compileTemplate(utils.readFileContent(loader.request, params.template), {
+\nthis.__component.__template=${compileTemplate(utils.readFileContent(templatePath), {
         selectors : knownSelectors
     })};\n\
 `, constructorContent, '\nthis.__component.init(this);', afterContent].join('');
