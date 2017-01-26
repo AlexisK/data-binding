@@ -186,7 +186,11 @@ export class RenderSession {
 
     _destroy(node) {
         // TODO: clean-up memory and relations
-        node.parentNode.removeChild(node);
+        try {
+            node.parentNode.removeChild(node);
+        } catch(err) {
+            logWarning('Failed to remove node from DOM', {node});
+        }
     }
 
 }

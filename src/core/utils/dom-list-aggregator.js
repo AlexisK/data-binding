@@ -63,7 +63,9 @@ export class DomListAggregator {
 
         this._domItems.forEach(node => {
             this._onDelete(node);
-            this.rootElement.removeChild(node);
+            if ( node.parentNode === this.rootElement ) {
+                this.rootElement.removeChild(node);
+            }
         });
 
         this._domItems = newDomItems;
