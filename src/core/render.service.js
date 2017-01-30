@@ -183,7 +183,6 @@ export class RenderSession {
         if ( isTop ) { return 0; }
 
         let component = new storage.component[template._componentSelector]();
-        component.__component._createSelf(target, true);
 
         if ( template._bindings ) {
             Object.keys(template._bindings).forEach(key => {
@@ -195,6 +194,14 @@ export class RenderSession {
                 });
             });
         }
+        if ( template._inputs ) {
+            Object.keys(template._inputs).forEach(key => {
+                //console.log(component, ctx, template._inputs[key]);
+                component[key] = evalExpression(ctx, template._inputs[key]);
+            });
+        }
+
+        component.__component._createSelf(target, true);
     }
 
     _destroy(node) {

@@ -4,10 +4,14 @@ const utils    = require('./utils');
 
 
 const STR = {
-    undefined : 'undefined',
-    checkFor  : '*for',
-    tag       : 'tag',
-    text      : 'text'
+    undefined  : 'undefined',
+    checkFor   : '*for',
+    tag        : 'tag',
+    text       : 'text',
+    _bindings  : '_bindings',
+    _bindVars  : '_bindVars',
+    _inputs    : '_inputs',
+    _inputVars : '_inputVars'
 };
 
 const CHECK = {
@@ -29,26 +33,36 @@ function checkFor(obj) {
     }
 }
 
-function extractBindings(obj) {
+function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decoratorEnd) {
     Object.keys(obj.attribs).forEach(key => {
-        if ( key[0] === CHECK.attributeBindingStart && key[key.length - 1] === CHECK.attributeBindingEnd ) {
-            let clearKey = key.slice(CHECK.attributeBindingStart.length, -CHECK.attributeBindingEnd.length);
+        if ( key[0] === decoratorStart && key[key.length - 1] === decoratorEnd ) {
+            let clearKey = key.slice(decoratorStart.length, -decoratorEnd.length);
 
-            obj._bindings           = obj._bindings || {};
-            obj._bindings[clearKey] = obj.attribs[key];
+            obj[storeKey]           = obj[storeKey] || {};
+            obj[storeKey][clearKey] = obj.attribs[key];
 
-            obj._bindVars           = obj._bindVars || {};
-            obj._bindVars[clearKey] = [];
+            obj[varsKey]           = obj[varsKey] || {};
+            obj[varsKey][clearKey] = [];
 
             for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(obj.attribs[key]);) {
-                if ( obj._bindVars[clearKey].indexOf(match[1]) === -1 ) {
-                    obj._bindVars[clearKey].push(match[1]);
+                if ( obj[varsKey][clearKey].indexOf(match[1]) === -1 ) {
+                    obj[varsKey][clearKey].push(match[1]);
                 }
             }
 
             delete obj.attribs[key];
         }
     });
+}
+
+
+function extractBindings(obj) {
+    extractDecoratedAttribute(obj, STR._bindings, STR._bindVars, CHECK.attributeBindingStart, CHECK.attributeBindingEnd);
+}
+
+
+function extractInputs(obj) {
+    extractDecoratedAttribute(obj, STR._inputs, STR._inputVars, CHECK.attributeInputStart, CHECK.attributeInputEnd);
 }
 
 function checkRenderContent(obj) {
@@ -121,6 +135,7 @@ function nodesToString(obj, params) {
                 ref._componentSelector = ref.name;
             }
             extractBindings(ref);
+            extractInputs(ref);
             convertAttribs(ref);
         }
         if ( ref.type === STR.text ) {
