@@ -26,6 +26,7 @@ export class DomListAggregator {
             return false;
         }
         if ( !this._onCreate ) {
+
             logException('No onCreate for DomListAggregator', {ref : this});
             return false;
         }

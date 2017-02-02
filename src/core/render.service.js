@@ -96,7 +96,12 @@ export class RenderSession {
         this.isPassive = false;
         this.rootNode  = document.createDocumentFragment();
         this._render(this.rootNode, this.context, this.template, true);
-        this.parentNode.appendChild(this.rootNode);
+        if ( isChild ) {
+            this.parentNode.appendChild(this.rootNode);
+        } else {
+            setTimeout(() =>
+                this.parentNode.appendChild(this.rootNode), 1);
+        }
     }
 
 

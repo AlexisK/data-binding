@@ -1,6 +1,6 @@
 export function cloneContext(ctx) {
-    let copy = Object.assign({}, ctx);
-    copy.__proto__ = ctx.__proto__;
+    let copy = new Object();
+    copy.__proto__ = ctx;
 
     return copy;
 }

@@ -1,6 +1,6 @@
-const HL       = require('node-html-light');
-const toSource = require('tosource');
-const utils    = require('./utils');
+const HL              = require('node-html-light');
+const toSource        = require('tosource');
+const utils           = require('./utils');
 const breakExpression = require('./break-expression');
 
 
@@ -22,7 +22,8 @@ const CHECK = {
     attributeBindingStart : '(',
     attributeBindingEnd   : ')',
     attributeInputStart   : '[',
-    attributeInputEnd     : ']'
+    attributeInputEnd     : ']',
+    domEvents             : ['onclick', 'onchange']
 };
 
 const TYPE = {
@@ -34,7 +35,7 @@ const TYPE = {
 // helpers
 function checkFor(obj) {
     if ( obj.attribs && obj.attribs[STR.checkFor] ) {
-        obj._for = obj.attribs[STR.checkFor].split(' in ');
+        obj._for    = obj.attribs[STR.checkFor].split(' in ');
         obj._for[1] = breakExpression(obj._for[1]);
 
         obj._bindFor = [];
@@ -84,6 +85,17 @@ function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decor
 
 function extractBindings(obj) {
     extractDecoratedAttribute(obj, STR._bindings, STR._bindVars, CHECK.attributeBindingStart, CHECK.attributeBindingEnd);
+    let iterObj = obj[STR._bindings];
+    for ( let k in iterObj) {
+        if ( iterObj.hasOwnProperty(k) && !!~CHECK.domEvents.indexOf(k) ) {
+            obj._bindDom = obj._bindDom || {};
+            obj._bindDom[k] = iterObj[k];
+            delete iterObj[k];
+        }
+    }
+    //if ( obj._bindDom ) {
+    //    console.log(obj);
+    //}
 }
 
 

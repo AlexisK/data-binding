@@ -1,14 +1,13 @@
 import { evalExpression } from "./utils/eval-expression";
+import { forEach } from './utils/for-each';
 
 const rules = {
-    onclick  : (target, ctx, template) => defaultWorker(target, 'click', ctx, template._bindings.onclick),
-    onchange : (target, ctx, template) => {
-        defaultWorker(target, 'keyup', ctx, template._bindings.onchange);
-    }
+    onclick  : function (target, ctx, template) { defaultWorker(target, 'click', ctx, template._bindDom.onclick);},
+    onchange : function (target, ctx, template) { defaultWorker(target, 'keyup', ctx, template._bindDom.onchange);}
 };
 
 function defaultWorker(target, evName, ctx, expr) {
-    target.addEventListener(evName, ev => {
+    target.addEventListener(evName, function(ev) {
         ctx['$event'] = ev;
         evalExpression(ctx, expr);
     })
@@ -16,11 +15,9 @@ function defaultWorker(target, evName, ctx, expr) {
 
 export class DomEventHandlerService {
     subscribeDom(target, ctx, template) {
-        if ( template._bindings ) {
-            Object.keys(template._bindings).forEach(evName => {
-                if ( rules[evName] ) {
-                    rules[evName](target, ctx, template);
-                }
+        if ( template._bindDom ) {
+            forEach(template._bindDom, (expr, evName) => {
+                rules[evName](target, ctx, template);
             });
         }
     }
