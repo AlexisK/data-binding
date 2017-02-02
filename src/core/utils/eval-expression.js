@@ -20,7 +20,9 @@ const OPERATOR = {
     minus : 2,
     mult  : 3,
     div   : 4,
-    perc  : 5
+    perc  : 5,
+    and   : 4,
+    or    : 5
 };
 
 
@@ -78,7 +80,7 @@ function handleItem(ctx, pair) {
 
 // Build work & index jumps
 function handleWork(ctx, workMap) {
-    let result = [];
+    let result             = [];
     let isFunctionExecuted = false;
 
     for (let i = 0; i < workMap.length; i++) {
@@ -111,6 +113,10 @@ function handleWork(ctx, workMap) {
                     result.push(leftOperand / handleItem(ctx, workMap[i]));
                 } else if ( pair[1] === OPERATOR.perc ) {
                     result.push(leftOperand % handleItem(ctx, workMap[i]));
+                } else if ( pair[1] === OPERATOR.and ) {
+                    result.push(leftOperand && handleItem(ctx, workMap[i]));
+                } else if ( pair[1] === OPERATOR.or ) {
+                    result.push(leftOperand || handleItem(ctx, workMap[i]));
                 }
             }
         }

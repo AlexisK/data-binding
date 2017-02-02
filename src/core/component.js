@@ -125,7 +125,7 @@ export class Component {
     }
 
     updateByVars(list) {
-        console.log('updateByVars', list);
+        //console.log('updateByVars', list, this.__checks);
         list.forEach(v => this._updateData(v));
     }
 

@@ -25,12 +25,28 @@ const CHECK = {
     attributeInputEnd     : ']'
 };
 
+const TYPE = {
+    expression    : 3,
+    expressionMap : 4
+};
+
 
 // helpers
 function checkFor(obj) {
     if ( obj.attribs && obj.attribs[STR.checkFor] ) {
         obj._for = obj.attribs[STR.checkFor].split(' in ');
         obj._for[1] = breakExpression(obj._for[1]);
+
+        obj._bindFor = [];
+
+        obj._for[1].workMap.forEach(pair => {
+            if ( pair[0] === TYPE.expression ) {
+                obj._bindFor.push(pair[1]);
+            } else if ( pair[0] === TYPE.expressionMap ) {
+                obj._bindFor.push(pair[1][0]);
+            }
+        });
+
         delete obj.attribs[STR.checkFor];
     }
 }
@@ -46,11 +62,19 @@ function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decor
             obj[varsKey]           = obj[varsKey] || {};
             obj[varsKey][clearKey] = [];
 
-            for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(obj.attribs[key]);) {
-                if ( obj[varsKey][clearKey].indexOf(match[1]) === -1 ) {
-                    obj[varsKey][clearKey].push(match[1]);
+            //for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(obj.attribs[key]);) {
+            //    if ( obj[varsKey][clearKey].indexOf(match[1]) === -1 ) {
+            //        obj[varsKey][clearKey].push(match[1]);
+            //    }
+            //}
+
+            obj[storeKey][clearKey].workMap.forEach(pair => {
+                if ( pair[0] === TYPE.expression ) {
+                    obj[varsKey][clearKey].push(pair[1]);
+                } else if ( pair[0] === TYPE.expressionMap ) {
+                    obj[varsKey][clearKey].push(pair[1][0]);
                 }
-            }
+            });
 
             delete obj.attribs[key];
         }

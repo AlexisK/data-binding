@@ -171,7 +171,11 @@ export class RenderSession {
             },
             onDelete : this._destroy.bind(this)
         });
-        this.extractVariables(template._for[1], {node : anchor, ctx});
+        //this.extractVariables(template._bindFor, {node : anchor, ctx});
+        template._bindFor.forEach(v => {
+            this.checks[v] = this.checks[v] || [];
+            this.checks[v].push({node : anchor, ctx});
+        });
 
         this.makeUpdateAble(anchor, (updCtx = ctx) => {
             let source = evalExpression(updCtx, template._for[1]);
@@ -187,6 +191,7 @@ export class RenderSession {
 
         if ( template._bindings ) {
             forEach(template._bindings, (expr, key) => {
+                // TODO: pass vars only, build worker in component during execution
                 component.__component.subscribeEvent(key, (val) => {
                     let lCtx = cloneContext(ctx);
                     lCtx['$event'] = val;

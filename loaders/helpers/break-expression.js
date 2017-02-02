@@ -1,13 +1,14 @@
 const G = {
-    reSpace      : /\s/,
-    reNotSpace   : /\S/,
-    reOperator   : /[\+\-\/\*\%]/,
-    reExpr       : /[$\w\d\.]/i,
-    reScopeOpen  : /\(/,
-    reScopeClose : /\)/,
-    reQuote      : /'/,
-    reBSlash     : /\\/,
-    reDot        : /\./
+    reSpace         : /\s/,
+    reNotSpace      : /\S/,
+    reOperator      : /[\+\-\/\*\%]/,
+    reLogicOperator : /(?:&&|\|\|)/,
+    reExpr          : /[$\w\d\.]/i,
+    reScopeOpen     : /\(/,
+    reScopeClose    : /\)/,
+    reQuote         : /'/,
+    reBSlash        : /\\/,
+    reDot           : /\./
 };
 
 const TYPE = {
@@ -21,11 +22,13 @@ const TYPE = {
 };
 
 const OPERATOR = {
-    '+' : 1,
-    '-' : 2,
-    '*' : 3,
-    '/' : 4,
-    '%' : 5
+    '+'  : 1,
+    '-'  : 2,
+    '*'  : 3,
+    '/'  : 4,
+    '%'  : 5,
+    '&&' : 6,
+    '||' : 7
 };
 
 module.exports = function breakExpression(expr, startIndex = 0) {
@@ -92,6 +95,8 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 // isExpression may change
                 if ( !isExpression ) {
 
+                    let cc = [prevC, c].join('');
+
                     if ( G.reScopeClose.test(c) ) {
                         exportIndex++;
                         break;
@@ -100,16 +105,18 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                         i += scopeExpression.exportIndex + 1;
                         exportIndex += scopeExpression.exportIndex + 1;
 
-                        let checkWM = workMap[workMap.length-1];
+                        let checkWM = workMap[workMap.length - 1];
                         if ( checkWM && checkWM[0] === TYPE.expression ) {
                             checkWM[0] = TYPE.function;
                         }
                         workMap.push([TYPE.scope, scopeExpression.workMap]);
                     } else
 
-                    // check operator
+                    // check operators
                     if ( G.reOperator.test(c) ) {
                         workMap.push([TYPE.operator, OPERATOR[c]]);
+                    } else if ( G.reLogicOperator.test(cc) ) {
+                        workMap.push([TYPE.operator, OPERATOR[cc]]);
                     } else {
                         // chack expr starts
                         if ( G.reExpr.test(c) ) {

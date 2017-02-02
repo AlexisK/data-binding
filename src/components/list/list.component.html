@@ -8,10 +8,10 @@
     <div class="list">
         <div class="item" *for="item in items">
             <list-item [value]="item.value" [title]="item.title"
-                       (delete)="items && removeItem(item)"></list-item>
+                       (delete)="removeItem(item) && items"></list-item>
         </div>
 
     </div>
 
-    <list-input (onsubmit)="items && addItem($event)"></list-input>
+    <list-input (onsubmit)="addItem($event) && items"></list-input>
 </div>
