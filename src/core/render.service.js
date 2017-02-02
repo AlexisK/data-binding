@@ -1,6 +1,7 @@
 import { evalExpression } from "./utils/eval-expression";
 import { storage } from "./storage.service";
 import { cloneContext } from "./utils/clone-context";
+import { forEach } from "./utils/for-each";
 import { logWarning, logException } from "./utils/log-exception";
 import { ArrayDiff } from "./utils/array-diff";
 import { DomListAggregator } from "./utils/dom-list-aggregator";
@@ -185,19 +186,19 @@ export class RenderSession {
         let component = new storage.component[template._componentSelector]();
 
         if ( template._bindings ) {
-            Object.keys(template._bindings).forEach(key => {
+            forEach(template._bindings, (expr, key) => {
                 component.__component.subscribeEvent(key, (val) => {
                     let lCtx = cloneContext(ctx);
                     lCtx['$event'] = val;
-                    evalExpression(lCtx, template._bindings[key]);
+                    evalExpression(lCtx, expr);
                     this._component.updateByVars(template._bindVars[key]);
                 });
             });
         }
         if ( template._inputs ) {
-            Object.keys(template._inputs).forEach(key => {
+            forEach(template._inputs, (inp, key) => {
                 //console.log(component, ctx, template._inputs[key]);
-                component[key] = evalExpression(ctx, template._inputs[key]);
+                component[key] = evalExpression(ctx, inp);
             });
         }
 

@@ -1,4 +1,5 @@
 import { iterateDom } from "./utils/iterate-dom";
+import { forEach } from "./utils/for-each";
 import { subscribeEventLoopUpdate } from "./event-loop-update";
 import { storage } from './storage.service';
 import { renderService } from "./render.service";
@@ -73,9 +74,9 @@ export class Component {
 
 
     _generateProps() {
-        Object.keys(this._ref).forEach(key => {
+        forEach(this._ref, (val, key) => {
             if ( key[0] !== '_' ) {
-                this._attrs[key] = this._ref[key];
+                this._attrs[key] = val;
                 this._ref.__defineGetter__(key, () => this._attrs[key]);
                 this._ref.__defineSetter__(key, (v) => {
                     this._attrs[key] = v;
@@ -86,9 +87,9 @@ export class Component {
     }
 
     _generateHookProps() {
-        Object.keys(this._ref).forEach(key => {
+        forEach(this._ref, (val, key) => {
             if ( key[0] !== '_' ) {
-                this._attrs[key] = this._ref[key];
+                this._attrs[key] = val;
                 this._ref.__defineGetter__(key, () => {
                     clearInterval(this._hookInterval);
                     this._hookInterval = setTimeout(() =>
@@ -108,7 +109,7 @@ export class Component {
         this._renderSession.updateables.forEach(ref => ref._update());
     }
     _blankUpdate() {
-        Object.keys(this._attrs).forEach(key => {
+        forEach(this._attrs, (val, key) => {
             if ( key[0] !== '_' ) {
                 this._updateData(key);
             }
