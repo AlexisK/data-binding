@@ -17,7 +17,7 @@ export class Component {
         this._attrs         = {};
         this._hookInterval  = null;
         this._eventWorkers  = {};
-        this._renderSession;
+        this._renderSession = null;
         // these are set with webpack custom loader 'data-bind-loader'
         this.__name         = null;
         this.__selector     = null;
@@ -125,6 +125,7 @@ export class Component {
     }
 
     updateByVars(list) {
+        console.log('updateByVars', list);
         list.forEach(v => this._updateData(v));
     }
 

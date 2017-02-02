@@ -24,11 +24,20 @@ const OPERATOR = {
 };
 
 
+let __updateInterval = null;
 export function evalExpression(ctx, expr) {
     let result = handleWork(ctx, expr.workMap);
     //console.log(expr, ctx);
     //console.log(result);
-    return result[0];
+
+    //if ( result.isFunctionExecuted ) {
+    //    clearInterval(__updateInterval);
+    //    __updateInterval = setTimeout(() => {
+    //        ctx.__component.updateByVars(extractVars(expr.workMap));
+    //    }, 1);
+    //}
+
+    return result.result[0];
 }
 
 
@@ -39,12 +48,24 @@ function addr(obj, keyChain, index = 0) {
     return addr(obj[keyChain[index]], keyChain, index + 1);
 }
 
+function extractVars(workMap) {
+    let result = [];
+    workMap.forEach(pair => {
+        if ( pair[0] === TYPE.expression ) {
+            result.push(pair[1]);
+        } else if ( pair[0] === TYPE.expressionMap ) {
+            result.push(pair[1][0]);
+        }
+    });
+    return result;
+}
+
 
 // Work by index
 function handleItem(ctx, pair) {
     if ( !pair ) { return null; }
     if ( pair[0] === TYPE.scope ) {
-        return handleWork(ctx, pair[1]);
+        return handleWork(ctx, pair[1]).result;
     } else if ( pair[0] === TYPE.string || pair[0] === TYPE.number ) {
         return pair[1];
     } else if ( pair[0] === TYPE.expression ) {
@@ -58,6 +79,7 @@ function handleItem(ctx, pair) {
 // Build work & index jumps
 function handleWork(ctx, workMap) {
     let result = [];
+    let isFunctionExecuted = false;
 
     for (let i = 0; i < workMap.length; i++) {
         let pair = workMap[i];
@@ -71,7 +93,8 @@ function handleWork(ctx, workMap) {
                 if ( args ) { args = args[1]; } else { args = []; }
                 //console.log(pair[1], args);
 
-                ctx[pair[1]].apply(ctx, handleWork(ctx, args));
+                ctx[pair[1]].apply(ctx, handleWork(ctx, args).result);
+                isFunctionExecuted = true;
 
                 i++;
             } else if ( pair[0] === TYPE.operator ) {
@@ -94,7 +117,10 @@ function handleWork(ctx, workMap) {
 
     }
     //console.log(result);
-    return result;
+    return {
+        result,
+        isFunctionExecuted
+    };
 }
 
 
@@ -107,7 +133,6 @@ const CHECK = {
     reUpdateVars : /@update\(([\s\w\d,\-_]+)\);?/gi
 };
 
-let __updateInterval = null;
 
 function evalExpression_old(ctx, expr) {
     try {
