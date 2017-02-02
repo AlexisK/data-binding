@@ -1,5 +1,7 @@
 import { logException } from "./log-exception";
+
 export class DomListAggregator {
+
     constructor(params = {}) {
         this._onCreate = params.onCreate;
         this._onDelete = params.onDelete || function () {};
@@ -33,16 +35,33 @@ export class DomListAggregator {
         return true;
     }
 
+    calcFirstIndex(newList) {
+        if ( !newList || !this._oldList ) { return 0; }
+        let i = 0;
+        for (; i < newList.length; i++) {
+            if ( newList[i] !== this._oldList[i] ) {
+                return i;
+            }
+        }
+        return i;
+    }
+
     fetch(newList) {
         if ( !this.checkValidity() ) {
             return 0;
         }
-        if ( this.rootElement.parentNode ) {
+        //TODO: create full diff instead of skipping same elements at the beginning
+        let startIndex = this.calcFirstIndex(newList);
+        let detachRequired = (newList.length - startIndex) > 3;
+
+        if ( detachRequired && this.rootElement.parentNode ) {
             this.rootElement.parentNode.removeChild(this.rootElement);
         }
 
         let newDomItems = [];
-        newList.forEach((data, i) => {
+        for ( var i = startIndex; i < newList.length; i++ ) {
+            let data = newList[i];
+
             let ind = this._oldList.indexOf(data);
             let newNode;
 
@@ -60,7 +79,9 @@ export class DomListAggregator {
 
             newDomItems.push(newNode);
             this._onInsert(newNode, data);
-        });
+        }
+
+        let savedItems = this._domItems.splice(0, startIndex);
 
         this._domItems.forEach(node => {
             this._onDelete(node);
@@ -69,10 +90,10 @@ export class DomListAggregator {
             }
         });
 
-        this._domItems = newDomItems;
+        this._domItems = [...savedItems, ...newDomItems];
         this._oldList  = newList.slice();
 
-        if ( this.anchor.parentNode ) {
+        if ( detachRequired && this.anchor.parentNode ) {
             this.anchor.parentNode.insertBefore(this.rootElement, this.anchor);
         }
     }

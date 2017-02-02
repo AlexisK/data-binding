@@ -95,7 +95,8 @@ export class RenderSession {
     render(isChild) {
         this.isPassive = false;
         this.rootNode  = document.createDocumentFragment();
-        this._render(this.rootNode, this.context, this.template, true);
+        this._render(this.rootNode, this.context, this.template, true, false);
+
         if ( isChild ) {
             this.parentNode.appendChild(this.rootNode);
         } else {
@@ -105,12 +106,12 @@ export class RenderSession {
     }
 
 
-    _render(target, ctx, template, isTop) {
+    _render(target, ctx, template, isTop, ignoreFor) {
         if ( template.constructor === Array ) {
-            template.forEach(tpl => this._render(target, ctx, tpl));
+            template.forEach(tpl => this._render(target, ctx, tpl, false, false));
         } else if ( template.type && this._renderBinding[template.type] ) {
             target.__rendered = target.__rendered || [];
-            this._renderBinding[template.type](target, ctx, template, isTop);
+            this._renderBinding[template.type](target, ctx, template, isTop, false);
         } else {
             logException('Failed to render template', {target, ctx, template});
         }
@@ -142,28 +143,28 @@ export class RenderSession {
 
     _render_tag(target, ctx, template, isTop, ignoreFor) {
         if ( template._for && !ignoreFor ) {
-            return this._render_for(target, ctx, template);
+            return this._render_for(target, ctx, template, false, false);
         }
         if ( template._componentSelector ) {
-            return this._render_component(target, ctx, template, isTop);
+            return this._render_component(target, ctx, template, isTop, false);
         }
 
-        let newNode = this._render_element(target, ctx, template, isTop);
-        this._render(newNode, ctx, template.children);
+        let newNode = this._render_element(target, ctx, template, isTop, false);
+        this._render(newNode, ctx, template.children, false, false);
 
         domEventHandlerService.subscribeDom(newNode, this._component._ref, template);
 
         return newNode;
     }
 
-    _render_element(target, ctx, template, isTop) {
+    _render_element(target, ctx, template, isTop, ignoreFor) {
         let newNode = document.createElement(template.name);
         template.attribs.forEach(pair => newNode[pair[0]] = pair[1]);
         target.appendChild(newNode);
         return newNode;
     }
 
-    _render_for(target, ctx, template, isTop) {
+    _render_for(target, ctx, template, isTop, ignoreFor) {
         let anchor     = this.createAnchor(target);
         let collection = new DomListAggregator({
             anchor,
@@ -172,7 +173,7 @@ export class RenderSession {
 
                 localCtx[template._for[0]] = val;
                 //console.log(collection.rootElement, localCtx, template);
-                return this._render_tag(collection.rootElement, localCtx, template, null, true);
+                return this._render_tag(collection.rootElement, localCtx, template, false, true);
             },
             onDelete : this._destroy.bind(this)
         });
@@ -182,14 +183,15 @@ export class RenderSession {
             this.checks[v].push({node : anchor, ctx});
         });
 
-        this.makeUpdateAble(anchor, (updCtx = ctx) => {
+        this.makeUpdateAble(anchor, (updCtx) => {
+            updCtx = updCtx || ctx;
             let source = evalExpression(updCtx, template._for[1]);
             collection.fetch(source);
         });
 
     }
 
-    _render_component(target, ctx, template, isTop) {
+    _render_component(target, ctx, template, isTop, ignoreFor) {
         if ( isTop ) { return 0; }
 
         let component = new storage.component[template._componentSelector]();

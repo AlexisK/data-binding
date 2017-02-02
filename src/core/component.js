@@ -4,10 +4,6 @@ import { subscribeEventLoopUpdate } from "./event-loop-update";
 import { storage } from './storage.service';
 import { renderService } from "./render.service";
 
-const CHECK = {
-    reNameTest        : /this.([\w\d]+)/gi,
-};
-
 export class Component {
 
 
@@ -23,14 +19,23 @@ export class Component {
         this.__selector     = null;
         this.__template     = null;
         this.__updateMethod = null;
+
+        //v8
+        this._ref     = null;
+        this.__checks = {};
+
+        this.updateMethodsMap = {
+            'property' : this._updateSubscribe_property.bind(this),
+            'hook'     : this._updateSubscribe_hook.bind(this),
+            'constant' : this._updateSubscribe_constant.bind(this)
+        };
     }
 
     init(ref) {
-        this._ref        = ref;
+        this._ref             = ref;
         this._attrs.__proto__ = ref;
-        this.__checks    = {};
-        this.__checksFor = {};
-        this._ref.emit   = this.emit.bind(this);
+        this.__checks         = {};
+        this._ref.emit        = this.emit.bind(this);
         this._initUpdateSubscribe();
     }
 
@@ -56,7 +61,7 @@ export class Component {
 
     // updateMethods
     _initUpdateSubscribe() {
-        this['_updateSubscribe_' + this.__updateMethod]();
+        this.updateMethodsMap[this.__updateMethod]();
     }
 
     _updateSubscribe_property() {
@@ -104,10 +109,10 @@ export class Component {
     }
 
 
-
     _forceUpdate() {
         this._renderSession.updateables.forEach(ref => ref._update());
     }
+
     _blankUpdate() {
         forEach(this._attrs, (val, key) => {
             if ( key[0] !== '_' ) {
@@ -131,7 +136,7 @@ export class Component {
 
     updateByVarsInExpression(expr) {
         let match;
-        while( match = CHECK.reNameTest.exec(expr) ) {
+        while (match = /this.([\w\d]+)/gi.exec(expr)) {
             this._updateData(match[1]);
         }
     }
@@ -141,6 +146,7 @@ export class Component {
         target.__component = this;
         this._recalcReferences(isChild);
     }
+
     _recalcReferences(isChild) {
         this._renderSession = renderService.render(this, isChild);
         this._forceUpdate();
