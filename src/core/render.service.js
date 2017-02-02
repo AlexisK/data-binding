@@ -56,7 +56,7 @@ export class RenderSession {
             worker(ctx);
             target._children.forEach(child => child._update());
         };
-        for (let parent = target.parentNode; parent; parent = parent._parentNode || parent.parentNode) {
+        for (let parent = target._parentNode || target.parentNode; parent; parent = parent._parentNode || parent.parentNode) {
             if ( parent._update ) {
                 parent._children.push(target);
                 break;
@@ -120,7 +120,7 @@ export class RenderSession {
     _render_text(target, ctx, template, isTop) {
         if ( template._renderMap ) {
             let node = document.createTextNode('');
-            target.appendChild(node);
+            node._parentNode = target;
 
             this.makeUpdateAble(node, (localContext = ctx) => {
                 let result = [];
@@ -135,6 +135,7 @@ export class RenderSession {
             });
 
             this.saveVariables(template._renderVars, {node, ctx});
+            target.appendChild(node);
 
         } else {
             target.appendChild(document.createTextNode(template.data));
