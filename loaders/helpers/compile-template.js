@@ -1,6 +1,7 @@
 const HL       = require('node-html-light');
 const toSource = require('tosource');
 const utils    = require('./utils');
+const breakExpression = require('./break-expression');
 
 
 const STR = {
@@ -29,6 +30,7 @@ const CHECK = {
 function checkFor(obj) {
     if ( obj.attribs && obj.attribs[STR.checkFor] ) {
         obj._for = obj.attribs[STR.checkFor].split(' in ');
+        obj._for[1] = breakExpression(obj._for[1]);
         delete obj.attribs[STR.checkFor];
     }
 }
@@ -39,7 +41,7 @@ function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decor
             let clearKey = key.slice(decoratorStart.length, -decoratorEnd.length);
 
             obj[storeKey]           = obj[storeKey] || {};
-            obj[storeKey][clearKey] = obj.attribs[key];
+            obj[storeKey][clearKey] = breakExpression(obj.attribs[key]);
 
             obj[varsKey]           = obj[varsKey] || {};
             obj[varsKey][clearKey] = [];
@@ -83,7 +85,7 @@ function checkRenderContent(obj) {
                     }
                 }
 
-                parseMap.push(ex.split(';'));
+                parseMap.push(ex.split(';').map(breakExpression));
                 i = ind + CHECK.renderContentEnd.length;
             } else {
                 let ind = str.indexOf(CHECK.renderContentStart, i);

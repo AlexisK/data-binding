@@ -35,7 +35,7 @@ export class ListComponent {
 
     generateItems() {
 
-        for ( let i = 1000; i --> 0; i-- ) {
+        for ( let i = 3; i --> 0; ) {
             this.items.push({
                 title: i,
                 value: false
