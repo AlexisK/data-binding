@@ -34,6 +34,7 @@ export class Component {
     }
 
     init(ref) {
+        //console.log('component', this.__name);
         this._ref             = ref;
         this._attrs.__proto__ = ref;
         this.__checks         = {};

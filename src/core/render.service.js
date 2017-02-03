@@ -18,34 +18,31 @@ const CHECK = {
 };
 
 const TPLTYPE = {
-    text: 0,
-    tag: 1
+    text : 0,
+    tag  : 1
 };
 
 export class RenderSession {
     constructor(component) {
-        this._component  = component;
-        this.parentNode  = component.__target;
-        this.rootNode    = document.createDocumentFragment();
-        this.context     = component._attrs;
-        this.template    = component.__template;
-        this.checks      = component.__checks;
-        //this.isPassive   = false;
-        this.updateables = [];
+        this._component    = component;
+        this.parentNode    = component.__target;
+        this.rootNode      = null;
+        this.context       = component._attrs;
+        this.template      = component.__template;
+        this.checks        = component.__checks;
+        this.updateables   = [];
         //this.renderedTimes = {
-        //    text: 0,
-        //    component: 0,
-        //    element: 0
+        //    text      : 0,
+        //    component : 0,
+        //    element   : 0
         //};
 
-        this._insertInterval = null;
-
-        this._renderBinding = [() => {}, this._render_text.bind(this), this._render_tag.bind(this)];
+        this._renderBinding = [function() {}, this._render_text.bind(this), this._render_tag.bind(this)];
 
     }
 
     createAnchor(target) {
-        let newNode = document.createComment(CHECK.anch);
+        let newNode = document.createComment(CHECK.empty);
         target.appendChild(newNode);
         return newNode;
     }
@@ -76,18 +73,12 @@ export class RenderSession {
 
     update(params) {
         if ( params.node && params.node._update ) {
-            //let anchor =  document.createComment(CHECK.anch);
-            //params.node.parentNode.insertBefore(anchor, params.node);
-            //params.node.parentNode.removeChild(params.node);
             params.node._update(params.ctx);
-            //params.node.parentNode.insertBefore(params.node, anchor);
-            //params.node.parentNode.removeChild(anchor);
         }
     }
 
     render(isChild) {
-        //this.isPassive = false;
-        this.rootNode  = document.createDocumentFragment();
+        this.rootNode = document.createDocumentFragment();
         this._render(this.rootNode, this.context, this.template, true, false);
 
         if ( isChild ) {
@@ -114,7 +105,7 @@ export class RenderSession {
         //this.renderedTimes.text++;
 
         if ( template._renderMap ) {
-            let node         = document.createTextNode('');
+            let node         = document.createTextNode(CHECK.empty);
             node._parentNode = target;
 
             this.makeUpdateAble(node, (localContext = ctx) => {
@@ -169,7 +160,6 @@ export class RenderSession {
                 let localCtx = cloneContext(ctx);
 
                 localCtx[template._for[0]] = val;
-                //console.log(collection.rootElement, localCtx, template);
                 return this._render_tag(collection.rootElement, localCtx, template, false, true);
             },
             onDelete : this._destroy.bind(this)
@@ -200,7 +190,6 @@ export class RenderSession {
         }
         if ( template._inputs ) {
             forEach(template._inputs, (inp, key) => {
-                //console.log(component, ctx, template._inputs[key]);
                 component[key] = evalExpression(ctx, inp);
             });
         }
@@ -211,6 +200,9 @@ export class RenderSession {
     _destroy(node) {
         // TODO: clean-up memory and relations
         try {
+            delete node._children;
+            delete node._update;
+            delete node._parentNode;
             node.parentNode.removeChild(node);
         } catch (err) {
             logWarning('Failed to remove node from DOM', {node});
@@ -247,7 +239,6 @@ export class RenderService {
 
 
     render(component, isChild) {
-        //console.log(target, ctx, template);
         let session = new RenderSession(component);
         session.render(isChild);
         return session;

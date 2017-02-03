@@ -52,7 +52,7 @@ export class DomListAggregator {
         }
         //TODO: create full diff instead of skipping same elements at the beginning
         let startIndex = this.calcFirstIndex(newList);
-        let detachRequired = (newList.length - startIndex) > 3;
+        let detachRequired = (newList.length - startIndex) > 10;
 
         if ( detachRequired && this.rootElement.parentNode ) {
             this.rootElement.parentNode.removeChild(this.rootElement);
