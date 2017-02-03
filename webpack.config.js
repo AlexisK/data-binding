@@ -1,6 +1,7 @@
 const path              = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack           = require("webpack");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var ROOT = path.resolve(__dirname);
 function root(args) {
@@ -15,6 +16,11 @@ const env        = {
     }
 };
 const proxyRules = {};
+
+const sassLoaders = [
+    'css-loader',
+    'sass-loader?includePaths[]=' + [root('src', 'app_styles', 'globals')]
+];
 
 module.exports = function (env = {}) {
     let result = {
@@ -59,7 +65,10 @@ module.exports = function (env = {}) {
                 {test : /\.css$/, loaders : ['to-string-loader', 'css-loader']},
                 {
                     test    : /\.scss$/,
-                    loaders : ['style-loader', 'css-loader', 'sass-loader?includePaths[]=' + [root('src', 'app_styles', 'globals')]],
+                    loader  : ExtractTextPlugin.extract({
+                        fallbackLoader : 'style-loader',
+                        loader         : sassLoaders.join('!')
+                    }),
                     exclude : /node_modules/,
                 },
                 {
@@ -85,6 +94,7 @@ module.exports = function (env = {}) {
         },
         plugins   : [
             //new webpack.optimize.UglifyJsPlugin(),
+            new ExtractTextPlugin("app.css"),
             new HtmlWebpackPlugin({
                 template : './src/index.html'
             })

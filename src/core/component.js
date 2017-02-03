@@ -3,22 +3,24 @@ import { forEach } from "./utils/for-each";
 import { subscribeEventLoopUpdate } from "./event-loop-update";
 import { storage } from './storage.service';
 import { renderService } from "./render.service";
+import { cloneContext } from "./utils/clone-context";
+import { evalExpression } from "./utils/eval-expression";
 
 export class Component {
 
 
     // startup
     constructor() {
-        this.__target       = null;
-        this._attrs         = {};
-        this._hookInterval  = null;
-        this._eventWorkers  = {};
-        this._renderSession = null;
+        this.__target           = null;
+        this._attrs             = {};
+        this._hookInterval      = null;
+        this._eventWorkerParams = {};
+        this._renderSession     = null;
         // these are set with webpack custom loader 'data-bind-loader'
-        this.__name         = null;
-        this.__selector     = null;
-        this.__template     = null;
-        this.__updateMethod = null;
+        this.__name             = null;
+        this.__selector         = null;
+        this.__template         = null;
+        this.__updateMethod     = null;
 
         //v8
         this._ref     = null;
@@ -39,17 +41,19 @@ export class Component {
         this._initUpdateSubscribe();
     }
 
-    subscribeEvent(name, worker) {
-        //console.log(name, '\n', this);
-        this._eventWorkers[name] = this._eventWorkers[name] || [];
-        this._eventWorkers[name].push(worker)
+    subscribeEventParams(name, bundle) {
+        this._eventWorkerParams[name] = this._eventWorkerParams[name] || [];
+        this._eventWorkerParams[name].push(bundle);
     }
 
     emit(key, val) {
         console.log('EMIT!', key, val);
-        if ( this._eventWorkers[key] ) {
-            this._eventWorkers[key].forEach(worker => {
-                worker(val);
+        if ( this._eventWorkerParams[key] ) {
+            this._eventWorkerParams[key].forEach(([ctx, expr, cmp, vars]) => {
+                let lCtx       = cloneContext(ctx);
+                lCtx['$event'] = val;
+                evalExpression(lCtx, expr);
+                cmp.updateByVars(vars);
             });
         }
     }

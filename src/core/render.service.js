@@ -8,20 +8,13 @@ import { DomListAggregator } from "./utils/dom-list-aggregator";
 import { domEventHandlerService } from './dom-event-handler.service';
 
 const CHECK = {
-    reNameTest        : /this.([\w\d]+)/gi,
-    textVarCheck      : '{{',
-    textVarCheckClose : '}}',
-    errorParsing      : '{{ERR}}',
-    attributeFor      : '*for',
-    attributeEvent    : ['(', ')'],
-    attributeInput    : ['[', ']'],
-    event             : '$event',
-    index             : '$index',
-    object            : 'object',
-    anch              : 'anch',
-    for               : 'for',
-    text              : 'text',
-    empty             : ''
+    event  : '$event',
+    index  : '$index',
+    object : 'object',
+    anch   : 'anch',
+    for    : 'for',
+    text   : 'text',
+    empty  : ''
 };
 
 export class RenderSession {
@@ -63,13 +56,6 @@ export class RenderSession {
             }
         }
         this.updateables.push(target);
-    }
-
-    extractVariables(string, value) {
-        for (let match, re = new RegExp(CHECK.reNameTest); match = re.exec(string);) {
-            this.checks[match[1]] = this.checks[match[1]] || [];
-            this.checks[match[1]].push(value);
-        }
     }
 
     saveVariables(list, val) {
@@ -119,7 +105,7 @@ export class RenderSession {
 
     _render_text(target, ctx, template, isTop) {
         if ( template._renderMap ) {
-            let node = document.createTextNode('');
+            let node         = document.createTextNode('');
             node._parentNode = target;
 
             this.makeUpdateAble(node, (localContext = ctx) => {
@@ -178,14 +164,13 @@ export class RenderSession {
             },
             onDelete : this._destroy.bind(this)
         });
-        //this.extractVariables(template._bindFor, {node : anchor, ctx});
         template._bindFor.forEach(v => {
             this.checks[v] = this.checks[v] || [];
             this.checks[v].push({node : anchor, ctx});
         });
 
         this.makeUpdateAble(anchor, (updCtx) => {
-            updCtx = updCtx || ctx;
+            updCtx     = updCtx || ctx;
             let source = evalExpression(updCtx, template._for[1]);
             collection.fetch(source);
         });
@@ -199,13 +184,7 @@ export class RenderSession {
 
         if ( template._bindings ) {
             forEach(template._bindings, (expr, key) => {
-                // TODO: pass vars only, build worker in component during execution
-                component.__component.subscribeEvent(key, (val) => {
-                    let lCtx = cloneContext(ctx);
-                    lCtx['$event'] = val;
-                    evalExpression(lCtx, expr);
-                    this._component.updateByVars(template._bindVars[key]);
-                });
+                component.__component.subscribeEventParams(key, [ctx, expr, this._component, template._bindVars[key]]);
             });
         }
         if ( template._inputs ) {
