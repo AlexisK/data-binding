@@ -18,6 +18,12 @@ function retrieveSelectors(html) {
     }
 }
 
+const updateMethodInds = {
+    'property' : 0,
+    'hook'     : 1,
+    'constant' : 2
+};
+
 function injectToConstructor(classBody, name, params, loader) {
     let match         = new RegExp(reConstructor).exec(classBody);
     let pos           = match.index + match[0].length;
@@ -41,7 +47,7 @@ function injectToConstructor(classBody, name, params, loader) {
 \nthis.__component = new Component();\
 \nthis.__component.__name=${utils.formatStr(name)};\
 \nthis.__component.__selector=${utils.formatStr(params.selector)};\
-\nthis.__component.__updateMethod=${utils.formatStr(params.update || 'property')};\
+\nthis.__component.__updateMethod=${updateMethodInds[params.update || 'property']};\
 \nthis.__component.__template=${compileTemplate(utils.readFileContent(templatePath), {
         selectors : knownSelectors
     })};\n\

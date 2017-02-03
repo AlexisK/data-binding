@@ -30,8 +30,13 @@ export class RenderSession {
         this.context     = component._attrs;
         this.template    = component.__template;
         this.checks      = component.__checks;
-        this.isPassive   = false;
+        //this.isPassive   = false;
         this.updateables = [];
+        //this.renderedTimes = {
+        //    text: 0,
+        //    component: 0,
+        //    element: 0
+        //};
 
         this._insertInterval = null;
 
@@ -81,7 +86,7 @@ export class RenderSession {
     }
 
     render(isChild) {
-        this.isPassive = false;
+        //this.isPassive = false;
         this.rootNode  = document.createDocumentFragment();
         this._render(this.rootNode, this.context, this.template, true, false);
 
@@ -91,6 +96,7 @@ export class RenderSession {
             setTimeout(() =>
                 this.parentNode.appendChild(this.rootNode), 1);
         }
+        //console.log('Rendered', this.renderedTimes);
     }
 
 
@@ -98,7 +104,6 @@ export class RenderSession {
         if ( template.constructor === Array ) {
             template.forEach(tpl => this._render(target, ctx, tpl, false, false));
         } else if ( template.type && this._renderBinding[template.type] ) {
-            target.__rendered = target.__rendered || [];
             this._renderBinding[template.type](target, ctx, template, isTop, false);
         } else {
             logException('Failed to render template', {target, ctx, template});
@@ -106,6 +111,8 @@ export class RenderSession {
     }
 
     _render_text(target, ctx, template, isTop) {
+        //this.renderedTimes.text++;
+
         if ( template._renderMap ) {
             let node         = document.createTextNode('');
             node._parentNode = target;
@@ -147,6 +154,7 @@ export class RenderSession {
     }
 
     _render_element(target, ctx, template, isTop, ignoreFor) {
+        //this.renderedTimes.element++;
         let newNode = document.createElement(template.name);
         template.attribs.forEach(pair => newNode[pair[0]] = pair[1]);
         target.appendChild(newNode);
@@ -180,6 +188,7 @@ export class RenderSession {
     }
 
     _render_component(target, ctx, template, isTop, ignoreFor) {
+        //this.renderedTimes.component++;
         if ( isTop ) { return 0; }
 
         let component = new storage.component[template._componentSelector]();

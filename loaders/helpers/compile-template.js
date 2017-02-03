@@ -5,6 +5,7 @@ const breakExpression = require('./break-expression');
 
 
 const STR = {
+    object  : 'object',
     undefined  : 'undefined',
     checkFor   : '*for',
     tag        : 'tag',
@@ -153,6 +154,23 @@ function convertAttribs(ref) {
     ref.attribs = result;
 }
 
+function clearEmptyTextNodes(ref) {
+
+    for ( let k in ref.children ) {
+        let data;
+        if ( ref.children.hasOwnProperty(k) && (data = ref.children[k]) ) {
+            if ( data.type === STR.text ) {
+                if ( !data.data.trim().length ) {
+                    delete ref.children[k];
+                }
+            } else if ( typeof(data) === STR.object && ref.constructor !== Array ) {
+                clearEmptyTextNodes(data);
+            }
+        }
+    }
+
+}
+
 // main processor
 function nodesToString(obj, params) {
     let knownSelectors = params.selectors || [];
@@ -166,6 +184,8 @@ function nodesToString(obj, params) {
         if ( typeof(ref.parent) !== STR.undefined ) { delete ref.parent; }
         if ( typeof(ref.next) !== STR.undefined ) { delete ref.next; }
         if ( typeof(ref.prev) !== STR.undefined ) { delete ref.prev; }
+
+        clearEmptyTextNodes(ref);
 
         if ( ref.type === STR.tag ) {
             ref.type = 2;

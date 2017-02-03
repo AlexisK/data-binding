@@ -26,11 +26,11 @@ export class Component {
         this._ref     = null;
         this.__checks = {};
 
-        this.updateMethodsMap = {
-            'property' : this._updateSubscribe_property.bind(this),
-            'hook'     : this._updateSubscribe_hook.bind(this),
-            'constant' : this._updateSubscribe_constant.bind(this)
-        };
+        this.updateMethodsMap = [
+            this._updateSubscribe_property.bind(this),
+            this._updateSubscribe_hook.bind(this),
+            this._updateSubscribe_constant.bind(this)
+        ];
     }
 
     init(ref) {
