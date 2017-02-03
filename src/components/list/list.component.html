@@ -7,7 +7,7 @@
     </div>
     <div class="list">
         <div class="item" *for="item in items">
-            <list-item [value]="item.value" [title]="item.title"
+            <list-item [item]="item"
                        (delete)="removeItem(item) && items"></list-item>
         </div>
 

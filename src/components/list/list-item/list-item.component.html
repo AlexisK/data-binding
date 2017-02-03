@@ -1,5 +1,5 @@
 <div>
-    <input type="checkbox" [checked]="value"/>
-    <strong>___ {{title}} ___</strong>
+    <input type="checkbox" [checked]="item.value"/>
+    <strong>___ {{item.title}} ___</strong>
     <button (onclick)="emit('delete')">X</button>
 </div>

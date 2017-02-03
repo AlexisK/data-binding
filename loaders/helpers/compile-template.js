@@ -86,9 +86,9 @@ function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decor
 function extractBindings(obj) {
     extractDecoratedAttribute(obj, STR._bindings, STR._bindVars, CHECK.attributeBindingStart, CHECK.attributeBindingEnd);
     let iterObj = obj[STR._bindings];
-    for ( let k in iterObj) {
+    for (let k in iterObj) {
         if ( iterObj.hasOwnProperty(k) && !!~CHECK.domEvents.indexOf(k) ) {
-            obj._bindDom = obj._bindDom || {};
+            obj._bindDom    = obj._bindDom || {};
             obj._bindDom[k] = iterObj[k];
             delete iterObj[k];
         }
@@ -168,6 +168,7 @@ function nodesToString(obj, params) {
         if ( typeof(ref.prev) !== STR.undefined ) { delete ref.prev; }
 
         if ( ref.type === STR.tag ) {
+            ref.type = 2;
             checkFor(ref);
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;
@@ -175,9 +176,11 @@ function nodesToString(obj, params) {
             extractBindings(ref);
             extractInputs(ref);
             convertAttribs(ref);
-        }
-        if ( ref.type === STR.text ) {
+        } else if ( ref.type === STR.text ) {
+            ref.type = 1;
             checkRenderContent(ref);
+        } else if ( ref.type ) {
+            ref.type = 0;
         }
     });
     return toSource(obj);

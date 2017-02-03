@@ -17,6 +17,11 @@ const CHECK = {
     empty  : ''
 };
 
+const TPLTYPE = {
+    text: 0,
+    tag: 1
+};
+
 export class RenderSession {
     constructor(component) {
         this._component  = component;
@@ -30,10 +35,7 @@ export class RenderSession {
 
         this._insertInterval = null;
 
-        this._renderBinding = {
-            text : this._render_text.bind(this),
-            tag  : this._render_tag.bind(this)
-        };
+        this._renderBinding = [() => {}, this._render_text.bind(this), this._render_tag.bind(this)];
 
     }
 

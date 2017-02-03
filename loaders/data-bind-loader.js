@@ -59,7 +59,7 @@ function prepareModified(source) {
                 return [`export class ${name} {`, injectToConstructor(classBody, name, params, this), '}'].join('');
             });
             resolve(result);
-        }, 1);
+        }, 100);
     });
 }
 
