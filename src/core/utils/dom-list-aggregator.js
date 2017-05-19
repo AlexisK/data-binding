@@ -38,6 +38,7 @@ export class DomListAggregator {
     calcFirstIndex(newList) {
         if ( !newList || !this._oldList ) { return 0; }
         let i = 0;
+        newList[0] = newList[0] || true;// V8
         for (; i < newList.length; i++) {
             if ( newList[i] !== this._oldList[i] ) {
                 return i;
@@ -46,12 +47,51 @@ export class DomListAggregator {
         return i;
     }
 
+    fetchWorker_create(newDomItems, data) {
+        let newNode         = this._onCreate(data);
+        newNode._parentNode = this.rootElement;
+        if ( !newNode.parentNode ) {
+            this.rootElement.appendChild(newNode);
+        }
+
+        this.fetchWorker_final(newDomItems, newNode, data);
+
+        return true;
+    }
+
+    fetchWorker_find(newDomItems, data) {
+        let ind = this._oldList.indexOf(data);
+
+        if ( !~ind ) {
+            return false;
+        }
+
+        this._oldList.splice(ind, 1);
+        let newNode = this._domItems.splice(ind, 1)[0];
+        this.rootElement.appendChild(newNode);
+
+        this.fetchWorker_final(newDomItems, newNode, data);
+
+        return true;
+    }
+
+    fetchWorker_final(newDomItems, newNode, data) {
+        newDomItems.push(newNode);
+        this._onInsert(newNode, data);
+    }
+
+    fetchWorker(newDomItems, data) { // DEOPTIMIZED
+        return this.fetchWorker_find(newDomItems, data) || this.fetchWorker_create(newDomItems, data);
+    }
+
     fetch(newList) {
         if ( !this.checkValidity() ) {
             return 0;
         }
+        newList[0] = newList[0] || true;// V8
+
         //TODO: create full diff instead of skipping same elements at the beginning
-        let startIndex = this.calcFirstIndex(newList);
+        let startIndex     = this.calcFirstIndex(newList);
         let detachRequired = (newList.length - startIndex) > 10;
 
         if ( detachRequired && this.rootElement.parentNode ) {
@@ -59,26 +99,8 @@ export class DomListAggregator {
         }
 
         let newDomItems = [];
-        for ( var i = startIndex; i < newList.length; i++ ) {
-            let data = newList[i];
-
-            let ind = this._oldList.indexOf(data);
-            let newNode;
-
-            if ( ind >= 0 ) {
-                this._oldList.splice(ind, 1);
-                newNode = this._domItems.splice(ind, 1)[0];
-                this.rootElement.appendChild(newNode);
-            } else {
-                newNode             = this._onCreate(data, i);
-                newNode._parentNode = this.rootElement;
-                if ( !newNode.parentNode ) {
-                    this.rootElement.appendChild(newNode);
-                }
-            }
-
-            newDomItems.push(newNode);
-            this._onInsert(newNode, data);
+        for (var i = startIndex; i < newList.length; i++) {
+            this.fetchWorker(newDomItems, newList[i]);
         }
 
         let savedItems = this._domItems.splice(0, startIndex);

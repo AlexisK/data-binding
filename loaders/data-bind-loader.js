@@ -26,6 +26,10 @@ const updateMethodInds = {
 
 function injectToConstructor(classBody, name, params, loader) {
     let match         = new RegExp(reConstructor).exec(classBody);
+    if ( !match ) {
+        console.error('Can\'t find constructor', name, classBody);
+        return '';
+    }
     let pos           = match.index + match[0].length;
     let beforeContent = match.input.slice(0, pos);
     let afterContent  = match.input.slice(pos);

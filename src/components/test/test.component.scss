@@ -1,5 +1,5 @@
 @import 'global';
 
 .db-test {
-  @include widget-1;
+  @include widget-1();
 }

@@ -1,0 +1,5 @@
+<div class="input-test">
+    <h2>Should have two-way data-binding</h2>
+    <strong>{{dict.value}}</strong>
+    <input type="text" [value]="dict.value" (onchange)="dict.value = $event.target.value" />
+</div>

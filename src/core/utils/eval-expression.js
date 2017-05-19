@@ -21,8 +21,9 @@ const OPERATOR = {
     mult  : 3,
     div   : 4,
     perc  : 5,
-    and   : 4,
-    or    : 5
+    and   : 6,
+    or    : 7,
+    ass   : 8
 };
 
 
@@ -49,6 +50,24 @@ function addr(obj, keyChain, index = 0) {
     }
     return addr(obj[keyChain[index]], keyChain, index + 1);
 }
+
+function addrWrite(obj, keyChain, value) {
+    if ( keyChain.length == 0 ) {
+        return null;
+    }
+    if ( typeof(keyChain) === 'string' ) {
+        return _addrWrite(obj, [keyChain], value);
+    }
+    return _addrWrite(obj, keyChain, value);
+}
+
+function _addrWrite(obj, keyChain, value) {
+    if ( keyChain.length == 1 ) {
+        return obj[keyChain[0]] = value;
+    }
+    return _addrWrite(obj[keyChain.shift()], keyChain, value);
+}
+
 
 function extractVars(workMap) {
     let result = [];
@@ -117,6 +136,8 @@ function handleWork(ctx, workMap) {
                     result.push(leftOperand && handleItem(ctx, workMap[i]));
                 } else if ( pair[1] === OPERATOR.or ) {
                     result.push(leftOperand || handleItem(ctx, workMap[i]));
+                } else if ( pair[1] === OPERATOR.ass ) {
+                    result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
                 }
             }
         }

@@ -1,7 +1,7 @@
 const G = {
     reSpace         : /\s/,
     reNotSpace      : /\S/,
-    reOperator      : /[\+\-\/\*\%]/,
+    reOperator      : /[\+\-\/\*\%\=]/,
     reLogicOperator : /(?:&&|\|\|)/,
     reExpr          : /[$\w\d\.]/i,
     reScopeOpen     : /\(/,
@@ -28,7 +28,8 @@ const OPERATOR = {
     '/'  : 4,
     '%'  : 5,
     '&&' : 6,
-    '||' : 7
+    '||' : 7,
+    '='  : 8
 };
 
 module.exports = function breakExpression(expr, startIndex = 0) {

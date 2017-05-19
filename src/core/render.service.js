@@ -23,21 +23,22 @@ const TPLTYPE = {
 };
 
 export class RenderSession {
+
     constructor(component) {
-        this._component    = component;
-        this.parentNode    = component.__target;
-        this.rootNode      = null;
-        this.context       = component._attrs;
-        this.template      = component.__template;
-        this.checks        = component.__checks;
-        this.updateables   = [];
+        this._component  = component;
+        this.parentNode  = component.__target;
+        this.rootNode    = null;
+        this.context     = component._attrs;
+        this.template    = component.__template;
+        this.checks      = component.__checks;
+        this.updateables = [];
         //this.renderedTimes = {
         //    text      : 0,
         //    component : 0,
         //    element   : 0
         //};
 
-        this._renderBinding = [function() {}, this._render_text.bind(this), this._render_tag.bind(this)];
+        this._renderBinding = [function () {}, this._render_text.bind(this), this._render_tag.bind(this)];
 
     }
 
@@ -84,6 +85,7 @@ export class RenderSession {
         if ( isChild ) {
             this.parentNode.appendChild(this.rootNode);
         } else {
+            console.log(this.template);
             setTimeout(() =>
                 this.parentNode.appendChild(this.rootNode), 1);
         }

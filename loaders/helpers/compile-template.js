@@ -17,7 +17,7 @@ const STR = {
 };
 
 const CHECK = {
-    reNameTest            : /this.([\w\d]+)/gi,
+    reNameTest            : /(\w[\w\d]*)/gi,
     renderContentStart    : '{{',
     renderContentEnd      : '}}',
     attributeBindingStart : '(',
@@ -109,6 +109,7 @@ function checkRenderContent(obj) {
         let parseMap = [];
         let str      = obj.data;
         let vars     = [];
+
 
         for (let i = 0, mode = false; i < str.length;) {
             if ( mode ) {

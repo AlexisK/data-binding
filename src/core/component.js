@@ -127,8 +127,10 @@ export class Component {
     }
 
     _updateData(key) {
-        if ( this.__checks[key] ) {
-            this.__checks[key].forEach(params => {
+        // TODO: this._checks if better
+        //console.log(this._renderSession.checks);
+        if ( this._renderSession.checks[key] ) {
+            this._renderSession.checks[key].forEach(params => {
                 this._renderSession.update(params);
             });
         }
