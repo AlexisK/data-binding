@@ -56,16 +56,23 @@ function addrWrite(obj, keyChain, value) {
         return null;
     }
     if ( typeof(keyChain) === 'string' ) {
-        return _addrWrite(obj, [keyChain], value);
+        return _addrWrite(obj, [keyChain], value, 0);
     }
-    return _addrWrite(obj, keyChain, value);
+    let result = _addrWrite(obj, keyChain, value, 0);
+
+    if ( keyChain.length > 1) {
+        // trigger setter
+        obj[keyChain[0]] = obj[keyChain[0]];
+    }
+
+    return result;
 }
 
-function _addrWrite(obj, keyChain, value) {
-    if ( keyChain.length == 1 ) {
-        return obj[keyChain[0]] = value;
+function _addrWrite(obj, keyChain, value, index) {
+    if ( !obj || keyChain.length - 1 === index ) {
+        return obj[keyChain[index]] = value;
     }
-    return _addrWrite(obj[keyChain.shift()], keyChain, value);
+    return _addrWrite(obj[keyChain[index]], keyChain, value, index + 1);
 }
 
 
@@ -137,6 +144,7 @@ function handleWork(ctx, workMap) {
                 } else if ( pair[1] === OPERATOR.or ) {
                     result.push(leftOperand || handleItem(ctx, workMap[i]));
                 } else if ( pair[1] === OPERATOR.ass ) {
+                    //console.log(workMap, leftOperand);
                     result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
                 }
             }
