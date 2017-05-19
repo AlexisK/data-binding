@@ -1,5 +1,18 @@
 <div class="input-test">
     <h2>Should have two-way data-binding</h2>
-    <strong>{{dict.value}}</strong>
-    <input type="text" [value]="dict.value" (onchange)="dict.value = $event.target.value" />
+    <div>
+        <strong>value</strong>
+        <div>{{value}}</div>
+        <input type="text" [value]="value" (onchange)="value = $event.target.value" />
+    </div>
+    <div>
+        <strong>dict.value</strong>
+        <div>{{dict.value}}</div>
+        <input type="text" [value]="dict.value" (onchange)="dict.value = $event.target.value" />
+    </div>
+
+    <div>
+        <strong>Summary</strong>
+        <div>{{value+dict.value}}</div>
+    </div>
 </div>

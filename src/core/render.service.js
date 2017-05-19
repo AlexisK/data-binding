@@ -85,7 +85,7 @@ export class RenderSession {
         if ( isChild ) {
             this.parentNode.appendChild(this.rootNode);
         } else {
-            console.log(this.template);
+            //console.log(this.template);
             setTimeout(() =>
                 this.parentNode.appendChild(this.rootNode), 1);
         }
