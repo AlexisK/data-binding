@@ -48,7 +48,7 @@ export class Component {
     }
 
     emit(key, val) {
-        console.log('EMIT!', key, val);
+        //console.log('EMIT!', key, val);
         if ( this._eventWorkerParams[key] ) {
             this._eventWorkerParams[key].forEach(([ctx, expr, cmp, vars]) => {
                 let lCtx       = cloneContext(ctx);

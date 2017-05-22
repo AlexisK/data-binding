@@ -12,6 +12,8 @@ export class TestComponent {
         this.y = [];
 
         this.str = 'Hello';
+
+        window.test = this;
     }
 
 }

@@ -35,7 +35,7 @@ export function evalExpression(ctx, expr) {
 
     //if ( result.isFunctionExecuted ) {
     //    clearInterval(__updateInterval);
-    //    __updateInterval = setTimeout(() => {
+    //    __updateInterval = setTimeout(() => {d
     //        ctx.__component.updateByVars(extractVars(expr.workMap));
     //    }, 1);
     //}
@@ -113,7 +113,9 @@ const operatorHandlers = {
     [OPERATOR.perc]  : (result, pair, ctx, workMap, i) => result.push(result.pop() % handleItem(ctx, workMap[i])),
     [OPERATOR.and]   : (result, pair, ctx, workMap, i) => result.push(result.pop() && handleItem(ctx, workMap[i])),
     [OPERATOR.or]    : (result, pair, ctx, workMap, i) => result.push(result.pop() || handleItem(ctx, workMap[i])),
-    [OPERATOR.ass]   : (result, pair, ctx, workMap, i) => result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])))
+    [OPERATOR.ass]   : (result, pair, ctx, workMap, i) => {
+        return result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
+    }
 };
 
 function handleOperator(result, pair, ctx, workMap, i) {
@@ -157,7 +159,7 @@ function handleWork(ctx, workMap) {
 }
 
 
-// Depricated
+// Deprecated
 
 
 const CHECK = {

@@ -1,0 +1,4 @@
+<div class="app-input">
+    <strong *if="label">{{label}}</strong>
+    <input [value]="value" (onchange)="emit('value', $event.target.value)" />
+</div>

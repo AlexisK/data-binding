@@ -213,7 +213,7 @@ export class RenderSession {
 
         if ( template._bindings ) {
             forEach(template._bindings, (expr, key) => {
-                component.__component.subscribeEventParams(key, [ctx, expr, this._component, template._bindVars[key]]);
+                component.__component.subscribeEventParams(key, [this._component._ref, expr, this._component, template._bindVars[key]]);
             });
         }
         if ( template._inputs ) {

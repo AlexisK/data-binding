@@ -5,5 +5,6 @@ import { Component } from "core/component";
     template : './list-item.component.html'
 })
 export class ListItemComponent {
-    constructor() {}
+    constructor() {
+    }
 }
