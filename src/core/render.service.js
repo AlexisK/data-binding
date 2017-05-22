@@ -131,6 +131,9 @@ export class RenderSession {
     }
 
     _render_tag(target, ctx, template, isTop, ignoreFor) {
+        if ( template._if && !ignoreFor ) {
+            return this._render_if(target, ctx, template, false, false);
+        }
         if ( template._for && !ignoreFor ) {
             return this._render_for(target, ctx, template, false, false);
         }
@@ -177,6 +180,27 @@ export class RenderSession {
             collection.fetch(source);
         });
 
+    }
+
+    _render_if(target, ctx, template, isTop, ignoreFor) {
+        let anchor     = this.createAnchor(target);
+        let tmp = document.createElement('div');
+        let result = this._render_tag(tmp, ctx, template, isTop, true);
+
+        template._bindIf.forEach(v => {
+            this.checks[v] = this.checks[v] || [];
+            this.checks[v].push({node : anchor, ctx});
+        });
+
+        this.makeUpdateAble(anchor, (updCtx) => {
+            updCtx     = updCtx || ctx;
+            let check = evalExpression(updCtx, template._if);
+            if ( check ) {
+                anchor.parentNode.insertBefore(result, anchor);
+            } else {
+                anchor.parentNode.removeChild(result);
+            }
+        });
     }
 
     _render_component(target, ctx, template, isTop, ignoreFor) {

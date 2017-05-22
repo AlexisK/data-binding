@@ -5,9 +5,10 @@ const breakExpression = require('./break-expression');
 
 
 const STR = {
-    object  : 'object',
+    object     : 'object',
     undefined  : 'undefined',
     checkFor   : '*for',
+    checkIf    : '*if',
     tag        : 'tag',
     text       : 'text',
     _bindings  : '_bindings',
@@ -34,22 +35,34 @@ const TYPE = {
 
 
 // helpers
+function getBindingsVarsFromExpr(expr) {
+    let bindings = [];
+
+    expr.workMap.forEach(pair => {
+        if ( pair[0] === TYPE.expression ) {
+            bindings.push(pair[1]);
+        } else if ( pair[0] === TYPE.expressionMap ) {
+            bindings.push(pair[1][0]);
+        }
+    });
+
+    return bindings;
+}
+
 function checkFor(obj) {
     if ( obj.attribs && obj.attribs[STR.checkFor] ) {
         obj._for    = obj.attribs[STR.checkFor].split(' in ');
         obj._for[1] = breakExpression(obj._for[1]);
-
-        obj._bindFor = [];
-
-        obj._for[1].workMap.forEach(pair => {
-            if ( pair[0] === TYPE.expression ) {
-                obj._bindFor.push(pair[1]);
-            } else if ( pair[0] === TYPE.expressionMap ) {
-                obj._bindFor.push(pair[1][0]);
-            }
-        });
-
+        obj._bindFor = getBindingsVarsFromExpr(obj._for[1]);
         delete obj.attribs[STR.checkFor];
+    }
+}
+
+function checkIf(obj) {
+    if ( obj.attribs && obj.attribs[STR.checkIf] ) {
+        obj._if    = breakExpression(obj.attribs[STR.checkIf]);
+        obj._bindIf = getBindingsVarsFromExpr(obj._if);
+        delete obj.attribs[STR.checkIf];
     }
 }
 
@@ -157,7 +170,7 @@ function convertAttribs(ref) {
 
 function clearEmptyTextNodes(ref) {
 
-    for ( let k in ref.children ) {
+    for (let k in ref.children) {
         let data;
         if ( ref.children.hasOwnProperty(k) && (data = ref.children[k]) ) {
             if ( data.type === STR.text ) {
@@ -190,6 +203,7 @@ function nodesToString(obj, params) {
 
         if ( ref.type === STR.tag ) {
             ref.type = 2;
+            checkIf(ref);
             checkFor(ref);
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;

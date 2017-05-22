@@ -2,14 +2,18 @@
     <h2>Should have two-way data-binding</h2>
     <div>
         <strong>value</strong>
-        <div>{{value}}</div>
+        <div>: {{value}}</div>
         <input type="text" [value]="value" (onchange)="value = $event.target.value" />
+        <strong *if="value">Has value</strong>
     </div>
+    <br />
+
     <div>
         <strong>dict.value</strong>
-        <div>{{dict.value}}</div>
+        <div>: {{dict.value}}</div>
         <input type="text" [value]="dict.value" (onchange)="dict.value = $event.target.value" />
     </div>
+    <br />
 
     <div>
         <strong>Summary</strong>
