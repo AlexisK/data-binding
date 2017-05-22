@@ -1,0 +1,30 @@
+@import "global";
+
+$input-height: 30px;
+
+.app-input {
+  .input-block {
+    height: $input-height + 2px;
+    border: 1px solid $grey-3;
+
+    .indicator {
+      float: right;
+      width: $input-height; height: $input-height;
+    }
+
+    .input {
+      input {
+        width: 100%; height: $input-height;
+        box-sizing: border-box;
+        padding: 5px 10px;
+        border: none;
+        background: transparent;
+        outline: none;
+      }
+    }
+
+    .indicator + .input {
+      margin-right: $input-height;
+    }
+  }
+}

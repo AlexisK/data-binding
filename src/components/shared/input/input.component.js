@@ -10,4 +10,8 @@ export class InputComponent {
 
     }
 
+    onchange(ev) {
+        this.emit('value', this.value = ev.target.value);
+    }
 }
+
