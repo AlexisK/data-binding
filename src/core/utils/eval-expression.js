@@ -104,6 +104,29 @@ function handleItem(ctx, pair) {
     return null;
 }
 
+function handleOperator(result, pair, ctx, workMap, i) {
+    let leftOperand = result.pop();
+
+    if ( pair[1] === OPERATOR.plus ) {
+        result.push(leftOperand + handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.minus ) {
+        result.push(leftOperand - handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.mult ) {
+        result.push(leftOperand * handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.div ) {
+        result.push(leftOperand / handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.perc ) {
+        result.push(leftOperand % handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.and ) {
+        result.push(leftOperand && handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.or ) {
+        result.push(leftOperand || handleItem(ctx, workMap[i]));
+    } else if ( pair[1] === OPERATOR.ass ) {
+        //console.log(workMap, leftOperand);
+        result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
+    }
+}
+
 // Build work & index jumps
 function handleWork(ctx, workMap) {
     let result             = [];
@@ -126,27 +149,9 @@ function handleWork(ctx, workMap) {
 
                 i++;
             } else if ( pair[0] === TYPE.operator ) {
-                let leftOperand = result.pop();
+                //let leftOperand = result.pop();
                 i++;
-
-                if ( pair[1] === OPERATOR.plus ) {
-                    result.push(leftOperand + handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.minus ) {
-                    result.push(leftOperand - handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.mult ) {
-                    result.push(leftOperand * handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.div ) {
-                    result.push(leftOperand / handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.perc ) {
-                    result.push(leftOperand % handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.and ) {
-                    result.push(leftOperand && handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.or ) {
-                    result.push(leftOperand || handleItem(ctx, workMap[i]));
-                } else if ( pair[1] === OPERATOR.ass ) {
-                    //console.log(workMap, leftOperand);
-                    result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
-                }
+                handleOperator(result, pair, ctx, workMap, i)
             }
         }
 

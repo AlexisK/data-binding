@@ -198,7 +198,9 @@ export class RenderSession {
             if ( check ) {
                 anchor.parentNode.insertBefore(result, anchor);
             } else {
-                anchor.parentNode.removeChild(result);
+                try {
+                    anchor.parentNode.removeChild(result);
+                } catch(err) {}
             }
         });
     }
