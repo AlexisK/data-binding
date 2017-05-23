@@ -153,7 +153,6 @@ export class RenderSession {
                 });
             });
             this.makeUpdateAble(newNode, (localContext = ctx) => {
-                //console.log('updating', newNode, template);
                 forEach(template._inputs, (inp, key) => {
                     newNode[key] = evalExpression(localContext, inp);
                 });
@@ -189,8 +188,22 @@ export class RenderSession {
         }
         if ( template._inputs ) {
             forEach(template._inputs, (inp, key) => {
+                //console.log(component, key, evalExpression(ctx, inp));
                 component[key] = evalExpression(ctx, inp);
             });
+
+            //forEach(template._inputVars, v => {
+            //    forEach(v, k => {
+            //        this.checks[k] = this.checks[k] || [];
+            //        this.checks[k].push({node: component, ctx});
+            //    });
+            //});
+            //this.makeUpdateAble(component, (localContext = ctx) => {
+            //    forEach(template._inputs, (inp, key) => {
+            //        console.log(component, key, evalExpression(localContext, inp));
+            //        component[key] = evalExpression(localContext, inp);
+            //    });
+            //});
         }
 
         component.__component._createSelf(target, true);
