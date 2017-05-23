@@ -154,7 +154,11 @@ export class RenderSession {
             });
             this.makeUpdateAble(newNode, (localContext = ctx) => {
                 forEach(template._inputs, (inp, key) => {
-                    newNode[key] = evalExpression(localContext, inp);
+                    if ( document.activeElement === newNode && key === 'value' ) {
+
+                    } else {
+                        newNode[key] = evalExpression(localContext, inp);
+                    }
                 });
             });
         }
@@ -168,6 +172,7 @@ export class RenderSession {
         let newNode = document.createElement(template.name);
 
         template.attribs.forEach(pair => {
+            newNode.setAttribute(pair[0], pair[1]);
             newNode[pair[0]] = pair[1];
         });
 

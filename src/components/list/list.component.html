@@ -1,17 +1,19 @@
-<div class="db-list">
-    <div class="list">
-        <div class="item" *for="item in items">
+<div class="mdc-card">
+    <section class="mdc-card__primary">
+        <h1 class="mdc-card__title mdc-card__title--large">Test *for</h1>
+        <h2 class="mdc-card__subtitle">N = {{N}}</h2>
+    </section>
+    <ul class="mdc-list mdc-list--dense">
+        <li class="mdc-list-item" *for="item in items">
             <input type="checkbox" [checked]="item.value"/>
-            <strong>Item with title: >{{item.title}}< title was there!</strong>
-        </div>
-    </div>
-    <div class="list">
-        <div class="item" *for="item in items">
             <list-item [item]="item"
                        (delete)="removeItem($event) && items"></list-item>
-        </div>
 
-    </div>
+        </li>
+    </ul>
+    <section class="mdc-card__supporting-text">
 
-    <list-input (onsubmit)="addItem($event) && items"></list-input>
+        <list-input (onsubmit)="addItem($event) && items"></list-input>
+    </section>
+
 </div>

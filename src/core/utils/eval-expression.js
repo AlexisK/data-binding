@@ -39,7 +39,6 @@ export function evalExpression(ctx, expr) {
     //        ctx.__component.updateByVars(extractVars(expr.workMap));
     //    }, 1);
     //}
-
     return result.result[0];
 }
 

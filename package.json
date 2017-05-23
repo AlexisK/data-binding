@@ -45,6 +45,11 @@
     "webpack-dev-server": "^1.16.2"
   },
   "dependencies": {
+    "@material/animation": "^0.2.2",
+    "@material/button": "^0.3.6",
+    "@material/card": "^0.2.1",
+    "@material/textfield": "^0.2.9",
+    "@material/typography": "^0.2.2",
     "material-components-web": "^0.11.1"
   }
 }

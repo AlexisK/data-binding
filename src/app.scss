@@ -1,31 +1,37 @@
+@import "~material-components-web/dist/material-components-web.css";
 @import "./app_styles/declarations/font";
 @import "global";
+//
+//* {
+//  margin: 0;
+//  padding: 0;
+//}
+//
+//body {
+//  background-color: $grey-1;
+//}
+//
+//div, input, button, textarea {
+//  box-sizing: border-box;
+//}
+//
+//a, img {
+//  display: block;
+//}
+//
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: $grey-1;
-}
-
-div, input, button, textarea {
-  box-sizing: border-box;
-}
-
-a, img {
-  display: block;
+:root {
+  --mdc-theme-primary: #0f8087;
 }
 
 .wrapper {
   max-width: 990px;
   margin: 0 auto;
-
-  > h1 {
-    padding: 40px 0 0 0;
-    margin-bottom: 40px;
-    border-bottom: 2px solid $grey-4;
-    color: $grey-6;
-  }
+  //
+  //> h1 {
+  //  padding: 40px 0 0 0;
+  //  margin-bottom: 40px;
+  //  border-bottom: 2px solid $grey-4;
+  //  color: $grey-6;
+  //}
 }

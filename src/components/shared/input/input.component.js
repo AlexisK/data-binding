@@ -8,7 +8,6 @@ require('./input.component.scss');
 export class InputComponent {
     constructor() {
         this.value = '';
-        window.test = this;
     }
 
     onchange(ev) {

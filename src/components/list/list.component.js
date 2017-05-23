@@ -30,12 +30,14 @@ export class ListComponent {
 
         this.generateItems();
 
+        this.N = 1;
+
         window.list = this;
     }
 
     generateItems() {
 
-        for ( let i = 1; i --> 0; ) {
+        for ( let i = this.N; i --> 0; ) {
             this.items.push({
                 title: i,
                 value: false
