@@ -51,8 +51,8 @@ function getBindingsVarsFromExpr(expr) {
 
 function checkFor(obj) {
     if ( obj.attribs && obj.attribs[STR.checkFor] ) {
-        obj._for    = obj.attribs[STR.checkFor].split(' in ');
-        obj._for[1] = breakExpression(obj._for[1]);
+        obj._for     = obj.attribs[STR.checkFor].split(' in ');
+        obj._for[1]  = breakExpression(obj._for[1]);
         obj._bindFor = getBindingsVarsFromExpr(obj._for[1]);
         delete obj.attribs[STR.checkFor];
     }
@@ -60,7 +60,7 @@ function checkFor(obj) {
 
 function checkIf(obj) {
     if ( obj.attribs && obj.attribs[STR.checkIf] ) {
-        obj._if    = breakExpression(obj.attribs[STR.checkIf]);
+        obj._if     = breakExpression(obj.attribs[STR.checkIf]);
         obj._bindIf = getBindingsVarsFromExpr(obj._if);
         delete obj.attribs[STR.checkIf];
     }
@@ -102,6 +102,7 @@ function extractBindings(obj) {
     let iterObj = obj[STR._bindings];
     for (let k in iterObj) {
         if ( iterObj.hasOwnProperty(k) && !!~CHECK.domEvents.indexOf(k) ) {
+        //if ( iterObj.hasOwnProperty(k) ) {
             obj._bindDom    = obj._bindDom || {};
             obj._bindDom[k] = iterObj[k];
             delete iterObj[k];

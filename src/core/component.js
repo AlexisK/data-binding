@@ -128,8 +128,8 @@ export class Component {
 
     _updateData(key) {
         // TODO: this._checks if better
-        //console.log(this._renderSession.checks);
-        if ( this._renderSession.checks[key] ) {
+        //console.log('_updateData', key, this._renderSession);
+        if ( this._renderSession && this._renderSession.checks[key] ) {
             this._renderSession.checks[key].forEach(params => {
                 this._renderSession.update(params);
             });

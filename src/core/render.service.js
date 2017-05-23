@@ -144,6 +144,21 @@ export class RenderSession {
         let newNode = this._render_element(target, ctx, template, isTop, false);
         this._render(newNode, ctx, template.children, false, false);
 
+
+        if ( template._inputs ) {
+            forEach(template._inputVars, v => {
+                forEach(v, k => {
+                    this.checks[k] = this.checks[k] || [];
+                    this.checks[k].push({node: newNode, ctx});
+                });
+            });
+            this.makeUpdateAble(newNode, (localContext = ctx) => {
+                //console.log('updating', newNode, template);
+                forEach(template._inputs, (inp, key) => {
+                    newNode[key] = evalExpression(localContext, inp);
+                });
+            });
+        }
         domEventHandlerService.subscribeDom(newNode, this._component._ref, template);
 
         return newNode;
@@ -152,11 +167,36 @@ export class RenderSession {
     _render_element(target, ctx, template, isTop, ignoreFor) {
         //this.renderedTimes.element++;
         let newNode = document.createElement(template.name);
-        template.attribs.forEach(pair => newNode[pair[0]] = pair[1]);
+
+        template.attribs.forEach(pair => {
+            newNode[pair[0]] = pair[1];
+        });
+
         target.appendChild(newNode);
         return newNode;
     }
 
+    _render_component(target, ctx, template, isTop, ignoreFor) {
+        //this.renderedTimes.component++;
+        if ( isTop ) { return 0; }
+
+        let component = new storage.component[template._componentSelector]();
+
+        if ( template._bindings ) {
+            forEach(template._bindings, (expr, key) => {
+                component.__component.subscribeEventParams(key, [this._component._ref, expr, this._component, template._bindVars[key]]);
+            });
+        }
+        if ( template._inputs ) {
+            forEach(template._inputs, (inp, key) => {
+                component[key] = evalExpression(ctx, inp);
+            });
+        }
+
+        component.__component._createSelf(target, true);
+    }
+
+    // FOR, IF
     _render_for(target, ctx, template, isTop, ignoreFor) {
         let anchor     = this.createAnchor(target);
         let collection = new DomListAggregator({
@@ -183,8 +223,8 @@ export class RenderSession {
     }
 
     _render_if(target, ctx, template, isTop, ignoreFor) {
-        let anchor     = this.createAnchor(target);
-        let tmp = document.createElement('div');
+        let anchor = this.createAnchor(target);
+        let tmp    = document.createElement('div');
         let result = this._render_tag(tmp, ctx, template, isTop, true);
 
         template._bindIf.forEach(v => {
@@ -193,36 +233,16 @@ export class RenderSession {
         });
 
         this.makeUpdateAble(anchor, (updCtx) => {
-            updCtx     = updCtx || ctx;
+            updCtx    = updCtx || ctx;
             let check = evalExpression(updCtx, template._if);
             if ( check ) {
                 anchor.parentNode.insertBefore(result, anchor);
             } else {
                 try {
                     anchor.parentNode.removeChild(result);
-                } catch(err) {}
+                } catch (err) {}
             }
         });
-    }
-
-    _render_component(target, ctx, template, isTop, ignoreFor) {
-        //this.renderedTimes.component++;
-        if ( isTop ) { return 0; }
-
-        let component = new storage.component[template._componentSelector]();
-
-        if ( template._bindings ) {
-            forEach(template._bindings, (expr, key) => {
-                component.__component.subscribeEventParams(key, [this._component._ref, expr, this._component, template._bindVars[key]]);
-            });
-        }
-        if ( template._inputs ) {
-            forEach(template._inputs, (inp, key) => {
-                component[key] = evalExpression(ctx, inp);
-            });
-        }
-
-        component.__component._createSelf(target, true);
     }
 
     _destroy(node) {

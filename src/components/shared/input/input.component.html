@@ -3,9 +3,9 @@
         <strong *if="label">{{label}}</strong>
     </div>
     <div class="input-block">
-        <div class="indicator hasValue" *if="value.length">V</div>
+        <div class="indicator indicator-left hasValue" *if="value">✓</div>
         <div class="input">
-            <input [value]="value" (onchange)="onchange($event)" />
+            <input [value]="value" (onchange)="onchange($event)" [placeholder]="label || ''" />
         </div>
     </div>
 </div>

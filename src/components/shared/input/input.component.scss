@@ -3,13 +3,31 @@
 $input-height: 30px;
 
 .app-input {
+
+  .label {
+    margin: 10px 0;
+    color: $grey-6;
+  }
+
   .input-block {
     height: $input-height + 2px;
     border: 1px solid $grey-3;
 
     .indicator {
-      float: right;
       width: $input-height; height: $input-height;
+      padding: 5px;
+      line-height: $input-height - 10px;
+      font-size: $input-height - 10px;
+      background-color: $grey-3;
+      color: white;
+      text-align: center;
+
+      &.indicator-right {
+        float: right;
+      }
+      &.indicator-left {
+        float: left;
+      }
     }
 
     .input {
@@ -23,8 +41,17 @@ $input-height: 30px;
       }
     }
 
-    .indicator + .input {
+    .indicator-right ~ .input {
       margin-right: $input-height;
+    }
+    .indicator-right + .indicator-right ~ .input {
+      margin-right: $input-height * 2;
+    }
+    .indicator-left ~ .input {
+      margin-left: $input-height;
+    }
+    .indicator-left + .indicator-left ~ .input {
+      margin-left: $input-height * 2;
     }
   }
 }
