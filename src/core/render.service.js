@@ -213,6 +213,8 @@ export class RenderSession {
         }
 
         component.__component._createSelf(target, true);
+
+        return component;
     }
 
     // FOR, IF
@@ -251,9 +253,9 @@ export class RenderSession {
             this.checks[v].push({node : anchor, ctx});
         });
 
-        this.makeUpdateAble(anchor, (updCtx) => {
-            updCtx    = updCtx || ctx;
+        this.makeUpdateAble(anchor, (updCtx = ctx) => {
             let check = evalExpression(updCtx, template._if);
+            //console.log(result, check, template._if, updCtx);
             if ( check ) {
                 anchor.parentNode.insertBefore(result, anchor);
             } else {
@@ -307,6 +309,7 @@ export class RenderService {
 
     render(component, isChild) {
         let session = new RenderSession(component);
+        if ( !isChild ) { console.log(component, session); }
         session.render(isChild);
         return session;
     }

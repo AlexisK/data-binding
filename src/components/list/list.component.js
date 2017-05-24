@@ -9,6 +9,8 @@ require('./list.component.scss');
 })
 export class ListComponent {
     constructor() {
+        this.stressStringStraight = 'String for every line';
+        this.stressStringComponent = 'String for every line c.';
         this.items = [
             {
                 title: 'item 1',

@@ -8,10 +8,14 @@ require('./test.component.scss');
 export class TestComponent {
 
     constructor() {
-        this.x = 10;
+        this.reset();
+    }
+
+    reset() {
+        this.x      = 10;
         this.params = {
-            a: true,
-            b: false
+            a : true,
+            b : false
         };
 
         this.str = 'Hello';

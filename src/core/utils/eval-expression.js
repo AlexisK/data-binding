@@ -23,7 +23,8 @@ const OPERATOR = {
     perc  : 5,
     and   : 6,
     or    : 7,
-    ass   : 8
+    eq   : 8,
+    ass   : 9
 };
 
 
@@ -112,6 +113,7 @@ const operatorHandlers = {
     [OPERATOR.perc]  : (result, pair, ctx, workMap, i) => result.push(result.pop() % handleItem(ctx, workMap[i])),
     [OPERATOR.and]   : (result, pair, ctx, workMap, i) => result.push(result.pop() && handleItem(ctx, workMap[i])),
     [OPERATOR.or]    : (result, pair, ctx, workMap, i) => result.push(result.pop() || handleItem(ctx, workMap[i])),
+    [OPERATOR.eq]    : (result, pair, ctx, workMap, i) => result.push(result.pop() == handleItem(ctx, workMap[i])),
     [OPERATOR.ass]   : (result, pair, ctx, workMap, i) => {
         return result.push(addrWrite(ctx, workMap[0][1], handleItem(ctx, workMap[i])));
     }

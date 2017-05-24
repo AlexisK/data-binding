@@ -3,10 +3,17 @@
         <h1 class="mdc-card__title mdc-card__title--large">Test *for</h1>
         <h2 class="mdc-card__subtitle">N = {{N}}</h2>
     </section>
+    <section class="mdc-card__supporting-text">
+        <h3>Stress test strings:</h3>
+        <app-input [(value)]="stressStringStraight" [label]="'Straight'"></app-input>
+        <app-input [(value)]="stressStringComponent" [label]="'In Components'"></app-input>
+    </section>
     <ul class="mdc-list mdc-list--dense">
         <li class="mdc-list-item" *for="item in items">
             <input type="checkbox" [checked]="item.value"/>
-            <list-item [item]="item"
+            <strong>{{stressStringStraight}}</strong>
+            <list-item [stringToDisplay]="stressStringComponent"
+                       [item]="item"
                        (delete)="removeItem($event) && items"></list-item>
 
         </li>

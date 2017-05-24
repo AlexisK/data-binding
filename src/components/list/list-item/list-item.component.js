@@ -6,5 +6,6 @@ import { Component } from "core/component";
 })
 export class ListItemComponent {
     constructor() {
+        this.stringToDisplay = '[]';
     }
 }

@@ -1,8 +1,8 @@
 const G = {
     reSpace         : /\s/,
     reNotSpace      : /\S/,
-    reOperator      : /[\+\-\/\*\%\=]/,
-    reLogicOperator : /(?:&&|\|\|)/,
+    reOperator      : /[\+\-\/\*\%=]/,
+    reLogicOperator : /(?:&&|\|\||==)/,
     reExpr          : /[$\w\d\.]/i,
     reScopeOpen     : /\(/,
     reScopeClose    : /\)/,
@@ -29,7 +29,8 @@ const OPERATOR = {
     '%'  : 5,
     '&&' : 6,
     '||' : 7,
-    '='  : 8
+    '==' : 8,
+    '='  : 9
 };
 
 module.exports = function breakExpression(expr, startIndex = 0) {
@@ -41,10 +42,11 @@ module.exports = function breakExpression(expr, startIndex = 0) {
     let exportIndex     = 0;
 
 
-    let c, prevC;
+    let c, nextC;
 
-    for (let i = startIndex; i < expr.length; i++, exportIndex++) {
+    for (let i = startIndex, iN = startIndex +1; i < expr.length; i++, iN++, exportIndex++) {
         c = expr[i];
+        nextC = expr[iN];
 
         //console.log(c);
         if ( isString ) {
@@ -95,8 +97,7 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 }
                 // isExpression may change
                 if ( !isExpression ) {
-
-                    let cc = [prevC, c].join('');
+                    let cc   = [c, nextC].join('');
 
                     if ( G.reScopeClose.test(c) ) {
                         exportIndex++;
@@ -114,10 +115,11 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                     } else
 
                     // check operators
-                    if ( G.reOperator.test(c) ) {
-                        workMap.push([TYPE.operator, OPERATOR[c]]);
-                    } else if ( G.reLogicOperator.test(cc) ) {
+                    if ( nextC && G.reLogicOperator.test(cc) ) {
+                        i++;
                         workMap.push([TYPE.operator, OPERATOR[cc]]);
+                    } else if ( G.reOperator.test(c) ) {
+                        workMap.push([TYPE.operator, OPERATOR[c]]);
                     } else {
                         // chack expr starts
                         if ( G.reExpr.test(c) ) {
@@ -130,7 +132,6 @@ module.exports = function breakExpression(expr, startIndex = 0) {
             }
         }
 
-        prevC = c;
     }
 
     if ( isExpression ) {

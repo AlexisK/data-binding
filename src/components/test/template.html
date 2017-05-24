@@ -16,11 +16,11 @@
             </tr>
             <tr>
                 <td>params.a</td>
-                <td>{{params.a}}</td>
+                <td>{{params.a || 'false'}}</td>
             </tr>
             <tr>
                 <td>params.b</td>
-                <td>{{params.b}}</td>
+                <td>{{params.b || 'false'}}</td>
             </tr>
         </table>
     </section>
@@ -29,10 +29,9 @@
         <app-input [(value)]="x" [label]="'Duplicate '+x"></app-input>
     </section>
     <section class="mdc-card__actions">
-        <button class="mdc-button mdc-button--compact mdc-card__action">Action 1</button>
-        <button class="mdc-button mdc-button--compact mdc-card__action">Action 2</button>
+        <button class="mdc-button mdc-button--compact mdc-card__action" (onclick)="reset()">Reset</button>
         <app-checkbox [value]="params.a" (value)="params.a = $event" [label]="'is a?'"></app-checkbox>
-        <app-checkbox [(value)]="params.b"></app-checkbox>
         <app-checkbox [(value)]="params.b" [label]="'is b?'"></app-checkbox>
+        <app-checkbox [(value)]="params.b"></app-checkbox>
     </section>
 </div>

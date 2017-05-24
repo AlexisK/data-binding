@@ -1,0 +1,12 @@
+<div class="mdc-card">
+    <section class="mdc-card__primary">
+        <h1 class="mdc-card__title mdc-card__title--large">Retrieve API test</h1>
+        <h2 class="mdc-card__subtitle">google books</h2>
+    </section>
+    <div *if="repos.length == 0"><app-progress-bar></app-progress-bar></div>
+    <section class="mdc-card__supporting-text">
+        <div *for="repo in repos">
+            <repo-item [data]="repo"></repo-item>
+        </div>
+    </section>
+</div>
