@@ -1,5 +1,10 @@
+@import "~material-components-web/dist/material-components-web.css";
+@import "~@material/layout-grid/mdc-layout-grid";
+@import "~@material/animation/mdc-animation";
+
 @import "./font";
 @import "./color";
+@import "./sizes";
 @import "./inputs";
 @import "./widgets";
 @import "./shadow";

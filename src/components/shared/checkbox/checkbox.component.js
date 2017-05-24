@@ -8,6 +8,7 @@ require('./checkbox.component.scss');
 export class CheckboxComponent {
     constructor() {
         this.value = false;
+        this.disabled = false;
     }
 
     onchange(ev) {

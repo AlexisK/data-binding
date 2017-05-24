@@ -11,6 +11,7 @@ import { RepoItemComponent } from './components/retrieve-api-test/repo-item/repo
 import { InputComponent } from "./components/shared/input/input.component";
 import { CheckboxComponent } from "./components/shared/checkbox/checkbox.component";
 import { ProgressBarComponent } from "./components/shared/progress-bar/progress-bar.component";
+import { GitProfileComponent } from "./components/shared/git-profile/git-profile.component";
 
 require('./app.scss');
 
@@ -19,7 +20,7 @@ console.log('Started');
 new App({
     components : [
         TestComponent, ListComponent, ListInputComponent, ListItemComponent, RetrieveApiTestComponent, RepoItemComponent,
-        InputComponent, CheckboxComponent, ProgressBarComponent
+        InputComponent, CheckboxComponent, ProgressBarComponent, GitProfileComponent
     ]
 }).init();
 

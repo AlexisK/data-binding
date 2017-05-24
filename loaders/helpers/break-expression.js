@@ -12,6 +12,7 @@ const G = {
 };
 
 const TYPE = {
+    constant      : 0,
     string        : 1,
     operator      : 2,
     expression    : 3,
@@ -33,6 +34,15 @@ const OPERATOR = {
     '='  : 9
 };
 
+const expressionMorph = {
+    true      : 1,
+    false     : 0,
+    null      : 0,
+    undefined : 0,
+    NaN       : 0,
+    Infinity  : 1
+};
+
 module.exports = function breakExpression(expr, startIndex = 0) {
     let workMap         = [];
     let isString        = false;
@@ -44,8 +54,8 @@ module.exports = function breakExpression(expr, startIndex = 0) {
 
     let c, nextC;
 
-    for (let i = startIndex, iN = startIndex +1; i < expr.length; i++, iN++, exportIndex++) {
-        c = expr[i];
+    for (let i = startIndex, iN = startIndex + 1; i < expr.length; i++, iN++, exportIndex++) {
+        c     = expr[i];
         nextC = expr[iN];
 
         //console.log(c);
@@ -78,16 +88,20 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 // checkWritingExpression
                 if ( isExpression ) {
                     if ( !G.reExpr.test(c) ) {
-                        let expr = stringBuffer.join('');
+                        let localExpr = stringBuffer.join('');
 
-                        if ( isNaN(expr) ) {
-                            if ( G.reDot.exec(expr) ) {
-                                workMap.push([TYPE.expressionMap, expr.split(G.reDot)]);
+                        if ( isNaN(localExpr) ) {
+                            if ( G.reDot.exec(localExpr) ) {
+                                workMap.push([TYPE.expressionMap, localExpr.split(G.reDot)]);
                             } else {
-                                workMap.push([TYPE.expression, expr]);
+                                if ( expressionMorph[localExpr] ) {
+                                    workMap.push([TYPE.number, expressionMorph[localExpr]]);
+                                } else {
+                                    workMap.push([TYPE.expression, localExpr]);
+                                }
                             }
                         } else {
-                            workMap.push([TYPE.number, parseFloat(expr)]);
+                            workMap.push([TYPE.number, parseFloat(localExpr)]);
                         }
 
                         isExpression = false;
@@ -97,7 +111,7 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 }
                 // isExpression may change
                 if ( !isExpression ) {
-                    let cc   = [c, nextC].join('');
+                    let cc = [c, nextC].join('');
 
                     if ( G.reScopeClose.test(c) ) {
                         exportIndex++;
@@ -121,7 +135,7 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                     } else if ( G.reOperator.test(c) ) {
                         workMap.push([TYPE.operator, OPERATOR[c]]);
                     } else {
-                        // chack expr starts
+                        // check expr starts
                         if ( G.reExpr.test(c) ) {
                             stringBuffer = [c];
                             isExpression = true;
@@ -135,15 +149,19 @@ module.exports = function breakExpression(expr, startIndex = 0) {
     }
 
     if ( isExpression ) {
-        let expr = stringBuffer.join('');
-        if ( isNaN(expr) ) {
-            if ( G.reDot.exec(expr) ) {
-                workMap.push([TYPE.expressionMap, expr.split(G.reDot)]);
+        let localExpr = stringBuffer.join('');
+        if ( isNaN(localExpr) ) {
+            if ( G.reDot.exec(localExpr) ) {
+                workMap.push([TYPE.expressionMap, localExpr.split(G.reDot)]);
             } else {
-                workMap.push([TYPE.expression, expr]);
+                if ( expressionMorph[localExpr] ) {
+                    workMap.push([TYPE.number, expressionMorph[localExpr]]);
+                } else {
+                    workMap.push([TYPE.expression, localExpr]);
+                }
             }
         } else {
-            workMap.push([TYPE.number, parseFloat(expr)]);
+            workMap.push([TYPE.number, parseFloat(localExpr)]);
         }
     }
 

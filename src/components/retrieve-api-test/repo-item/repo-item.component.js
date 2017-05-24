@@ -1,4 +1,5 @@
 import { Component } from "core/component";
+require('./repo-item.component.scss');
 
 @Component({
     selector : 'repo-item',

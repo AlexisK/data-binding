@@ -1,12 +1,17 @@
 <div class="mdc-card">
     <section class="mdc-card__primary">
         <h1 class="mdc-card__title mdc-card__title--large">Retrieve API test</h1>
-        <h2 class="mdc-card__subtitle">google books</h2>
+        <h2 class="mdc-card__subtitle">AlexisK github repos</h2>
     </section>
-    <div *if="repos.length == 0"><app-progress-bar></app-progress-bar></div>
-    <section class="mdc-card__supporting-text">
-        <div *for="repo in repos">
+    <div *if="repos.length == 0">
+        <app-progress-bar></app-progress-bar>
+    </div>
+    <section class="mdc-card__actions">
+        <app-input [label]="'GitHub users'" [value]="users" (value)="usersUpdated($event)"></app-input>
+    </section>
+    <div class="app-repos-list">
+        <div *for="repo in repos" class="item">
             <repo-item [data]="repo"></repo-item>
         </div>
-    </section>
+    </div>
 </div>

@@ -161,6 +161,8 @@ export class RenderSession {
                 forEach(template._inputs, (inp, key) => {
                     if ( document.activeElement === newNode && key === 'value' ) {
 
+                    } else if (key === 'class') {
+                        newNode.className = evalExpression(localContext, inp);
                     } else {
                         newNode[key] = evalExpression(localContext, inp);
                     }
@@ -309,7 +311,6 @@ export class RenderService {
 
     render(component, isChild) {
         let session = new RenderSession(component);
-        if ( !isChild ) { console.log(component, session); }
         session.render(isChild);
         return session;
     }

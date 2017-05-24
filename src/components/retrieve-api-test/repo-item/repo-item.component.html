@@ -1,1 +1,16 @@
-<h1>!</h1>
+<div class="mdc-card repo-card">
+    <app-git-profile [profile]="data.owner"></app-git-profile>
+    <div>
+        <section class="mdc-card__actions mdc-card__actions--vertical">
+            <app-checkbox [disabled]="true" [value]="data.private" [label]="'Is Private'"></app-checkbox>
+            <app-checkbox [disabled]="true" [value]="data.fork" [label]="'Is a Fork'"></app-checkbox>
+        </section>
+    </div>
+    <section class="mdc-card__primary">
+        <h1 class="mdc-card__title mdc-card__title--large">{{data.name}}</h1>
+        <h2 class="mdc-card__subtitle">{{data.ssh_url}}</h2>
+    </section>
+    <section class="mdc-card__actions">
+        <a [href]="data.html_url" target="_blank" class="mdc-button mdc-button--compact mdc-card__action">View on GitHub</a>
+    </section>
+</div>

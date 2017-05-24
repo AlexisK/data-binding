@@ -6,6 +6,7 @@ import { logWarning, logException } from "./log-exception";
 
 
 const TYPE = {
+    constant      : 0,
     string        : 1,
     operator      : 2,
     expression    : 3,
@@ -23,7 +24,7 @@ const OPERATOR = {
     perc  : 5,
     and   : 6,
     or    : 7,
-    eq   : 8,
+    eq    : 8,
     ass   : 9
 };
 
@@ -93,6 +94,7 @@ function extractVars(workMap) {
 
 const itemHandlers = {
     def                  : () => null,
+    [TYPE.constant]      : (ctx, pair) => pair[1],
     [TYPE.scope]         : (ctx, pair) => handleWork(ctx, pair[1]).result,
     [TYPE.string]        : (ctx, pair) => pair[1],
     [TYPE.number]        : (ctx, pair) => pair[1],

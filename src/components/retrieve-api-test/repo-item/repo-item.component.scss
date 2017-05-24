@@ -1,0 +1,16 @@
+@import "global";
+
+.repo-card {
+  position: relative;
+  overflow: hidden;
+
+  .app-git-profile {
+    position: absolute;
+    top: 0; left: 0;
+
+    & + * {
+      margin-left: $git-profile-size-w;
+      min-height: $git-profile-size-h;
+    }
+  }
+}

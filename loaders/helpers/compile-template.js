@@ -189,7 +189,6 @@ function convertAttribs(ref) {
 }
 
 function clearEmptyTextNodes(ref) {
-
     for (let k in ref.children) {
         let data;
         if ( ref.children.hasOwnProperty(k) && (data = ref.children[k]) ) {
@@ -207,6 +206,7 @@ function clearEmptyTextNodes(ref) {
 
 // main processor
 function nodesToString(obj, params) {
+
     let knownSelectors = params.selectors || [];
 
     utils.iterateObject(obj, ref => {

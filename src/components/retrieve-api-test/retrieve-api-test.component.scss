@@ -1,0 +1,14 @@
+@import "global";
+
+.mdc-card {
+  .app-repos-list {
+    .dom-list-aggregator {
+      @include mdc-layout-grid(16px, 16px);
+
+      .item {
+        @include mdc-layout-grid-cell(16px, 4);
+      }
+    }
+
+  }
+}
