@@ -1,7 +1,8 @@
 <div class="app-checkbox mdc-form-field">
     <div class="mdc-checkbox">
         <input type="checkbox"
-               class="mdc-checkbox__native-control"/>
+               class="mdc-checkbox__native-control"
+               [checked]="value" (onchange)="onchange($event)"/>
         <div class="mdc-checkbox__background">
             <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
                 <path class="mdc-checkbox__checkmark__path"
@@ -13,5 +14,5 @@
         </div>
     </div>
 
-    <label>My Checkbox Label</label>
+    <label *if="label">{{label}}</label>
 </div>

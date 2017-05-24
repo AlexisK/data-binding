@@ -1,6 +1,6 @@
 <div class="app-input">
     <div class="mdc-textfield" data-mdc-auto-init="MDCTextfield">
-        <input type="text"  [value]="value" (onchange)="onchange($event)" class="mdc-textfield__input">
-        <label class="mdc-textfield__label" *if="label">{{label}}</label>
+        <input type="text"  [value]="value || ''" (onchange)="onchange($event)" class="mdc-textfield__input">
+        <label class="mdc-textfield__label" *if="label">{{label || ''}}</label>
     </div>
 </div>

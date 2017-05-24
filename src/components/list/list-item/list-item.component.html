@@ -1,5 +1,5 @@
 <div>
-    <app-checkbox></app-checkbox>
+    <app-checkbox [value]="item.value" (value)="item.value = $event"></app-checkbox>
     <input type="checkbox" [checked]="item.value"/>
     <strong>___ {{item.title}} ___</strong>
     <button (onclick)="emit('delete', item)">X</button>

@@ -65,10 +65,17 @@ export class RenderSession {
 
     saveVariables(list, val) {
         if ( list ) {
-            list.forEach(key => {
-                this.checks[key] = this.checks[key] || [];
-                this.checks[key].push(val);
-            });
+            if ( list.forEach ) {
+                list.forEach(key => {
+                    this.checks[key] = this.checks[key] || [];
+                    this.checks[key].push(val);
+                });
+            } else {
+                forEach(list, (v, key) => {
+                    this.checks[key] = this.checks[key] || [];
+                    this.checks[key].push(val);
+                });
+            }
         }
     }
 
@@ -147,10 +154,7 @@ export class RenderSession {
 
         if ( template._inputs ) {
             forEach(template._inputVars, v => {
-                forEach(v, k => {
-                    this.checks[k] = this.checks[k] || [];
-                    this.checks[k].push({node: newNode, ctx});
-                });
+                this.saveVariables(v, {node: newNode, ctx});
             });
             this.makeUpdateAble(newNode, (localContext = ctx) => {
                 forEach(template._inputs, (inp, key) => {
@@ -197,18 +201,14 @@ export class RenderSession {
                 component[key] = evalExpression(ctx, inp);
             });
 
-            //forEach(template._inputVars, v => {
-            //    forEach(v, k => {
-            //        this.checks[k] = this.checks[k] || [];
-            //        this.checks[k].push({node: component, ctx});
-            //    });
-            //});
-            //this.makeUpdateAble(component, (localContext = ctx) => {
-            //    forEach(template._inputs, (inp, key) => {
-            //        console.log(component, key, evalExpression(localContext, inp));
-            //        component[key] = evalExpression(localContext, inp);
-            //    });
-            //});
+            forEach(template._inputVars, v => {
+                this.saveVariables(v, {node: component, ctx});
+            });
+            this.makeUpdateAble(component, (localContext = ctx) => {
+                forEach(template._inputs, (inp, key) => {
+                    component[key] = evalExpression(localContext, inp);
+                });
+            });
         }
 
         component.__component._createSelf(target, true);
