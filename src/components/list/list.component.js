@@ -27,12 +27,9 @@ export class ListComponent {
                 value: false
             }
         ];
+        this.N = 10000;
 
         this.generateItems();
-
-        this.N = 1;
-
-        window.list = this;
     }
 
     generateItems() {

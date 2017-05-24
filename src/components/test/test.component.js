@@ -9,7 +9,10 @@ export class TestComponent {
 
     constructor() {
         this.x = 10;
-        this.y = [];
+        this.params = {
+            a: true,
+            b: false
+        };
 
         this.str = 'Hello';
     }

@@ -51,8 +51,9 @@ export class RenderSession {
     makeUpdateAble(target, worker) {
         target._children = [];
         target._update   = (ctx) => {
+            //console.log('update', {target, ctx, worker});
             worker(ctx);
-            target._children.forEach(child => child._update());
+            //target._children.forEach(child => child._update());
         };
         for (let parent = target._parentNode || target.parentNode; parent; parent = parent._parentNode || parent.parentNode) {
             if ( parent._update ) {
