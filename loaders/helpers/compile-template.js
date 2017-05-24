@@ -68,7 +68,7 @@ function checkIf(obj) {
 
 function extractDecoratedAttribute(obj, storeKey, varsKey, decoratorStart, decoratorEnd) {
     Object.keys(obj.attribs).forEach(key => {
-        if ( key[0] === decoratorStart && key[key.length - 1] === decoratorEnd ) {
+        if ( key.indexOf(decoratorStart) === 0 && key.lastIndexOf(decoratorEnd) === key.length - decoratorEnd.length ) {
             let clearKey = key.slice(decoratorStart.length, -decoratorEnd.length);
 
             obj[storeKey]           = obj[storeKey] || {};
@@ -102,7 +102,7 @@ function extractBindings(obj) {
     let iterObj = obj[STR._bindings];
     for (let k in iterObj) {
         if ( iterObj.hasOwnProperty(k) && !!~CHECK.domEvents.indexOf(k) ) {
-        //if ( iterObj.hasOwnProperty(k) ) {
+            //if ( iterObj.hasOwnProperty(k) ) {
             obj._bindDom    = obj._bindDom || {};
             obj._bindDom[k] = iterObj[k];
             delete iterObj[k];
@@ -117,6 +117,25 @@ function extractBindings(obj) {
 function extractInputs(obj) {
     extractDecoratedAttribute(obj, STR._inputs, STR._inputVars, CHECK.attributeInputStart, CHECK.attributeInputEnd);
 }
+
+function breakTwoWayBindingIntoInputAndBinding(obj) {// YEAH, BABY!
+    let decoratorStart = CHECK.attributeInputStart + CHECK.attributeBindingStart;
+    let decoratorEnd   = CHECK.attributeBindingEnd + CHECK.attributeInputEnd;
+
+    for (let key in obj.attribs) {
+        let val = obj.attribs[key];
+
+        if ( key.indexOf(decoratorStart) === 0 && key.lastIndexOf(decoratorEnd) === key.length - decoratorEnd.length ) {
+            let clearKey = key.slice(decoratorStart.length, -decoratorEnd.length);
+
+            obj.attribs[CHECK.attributeInputStart + clearKey + CHECK.attributeInputEnd]     = val;
+            obj.attribs[CHECK.attributeBindingStart + clearKey + CHECK.attributeBindingEnd] = val + '=$event';
+
+            delete obj.attribs[key];
+        }
+    }
+}
+
 
 function checkRenderContent(obj) {
     if ( obj.data && obj.data.indexOf(CHECK.renderContentStart) >= 0 ) {
@@ -209,6 +228,7 @@ function nodesToString(obj, params) {
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;
             }
+            breakTwoWayBindingIntoInputAndBinding(ref);
             extractBindings(ref);
             extractInputs(ref);
             convertAttribs(ref);
