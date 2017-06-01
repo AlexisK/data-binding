@@ -3,43 +3,15 @@ const toSource        = require('tosource');
 const utils           = require('./utils');
 const breakExpression = require('./break-expression');
 
+const CONFIG = require('../config');
+const {STR, CHECK, TYPE} = CONFIG;
 
-const STR = {
-    object     : 'object',
-    undefined  : 'undefined',
-    checkFor   : '*for',
-    checkIf    : '*if',
-    tag        : 'tag',
-    text       : 'text',
-    _bindings  : '_bindings',
-    _bindVars  : '_bindVars',
-    _inputs    : '_inputs',
-    _inputVars : '_inputVars'
-};
 
-const CHECK = {
-    reNameTest            : /(\w[\w\d]*)/gi,
-    renderContentStart    : '{{',
-    renderContentEnd      : '}}',
-    attributeBindingStart : '(',
-    attributeBindingEnd   : ')',
-    attributeInputStart   : '[',
-    attributeInputEnd     : ']',
-    domEvents             : ['onclick', 'onchange']
-};
 
-const TYPE = {
-    expression    : 3,
-    expressionMap : 4
-};
-
-const NSRules    = {
-    'http://www.w3.org/2000/svg' : 'svg,path'.split(',')
-};
 const NSElements = (() => {
     let result = {};
-    for (let namespace in NSRules) {
-        NSRules[namespace].forEach(tag => result[tag] = namespace);
+    for (let namespace in CONFIG.NSRules) {
+        CONFIG.NSRules[namespace].forEach(tag => result[tag] = namespace);
     }
     return result;
 })();
@@ -182,12 +154,8 @@ function checkRenderContent(obj) {
     }
 }
 
-const replacementKeys   = {
-    class : 'className'
-};
-const nsReplacementKeys = {
-    viewbox : 'viewBox'
-};
+const replacementKeys   = CONFIG.attributesMapping.html;
+const nsReplacementKeys = CONFIG.attributesMapping.ns;
 
 function convertAttribs(ref) {
     let result = [];

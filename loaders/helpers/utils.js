@@ -1,18 +1,7 @@
 const fs   = require('fs');
 const path = require('path');
 
-const STR = {
-    undefined : 'undefined',
-    object    : 'object',
-    string    : 'string',
-    xeq       : 'x = ',
-    q         : "'",
-    mark      : '!',
-    slash     : '/',
-    space     : ' ',
-    utf       : 'utf8',
-    empty     : ''
-};
+const {STR} = require('../config');
 
 function retrieveJson(str) {
     try {

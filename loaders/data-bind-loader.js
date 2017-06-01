@@ -3,6 +3,7 @@ const path = require('path');
 
 const utils           = require("./helpers/utils");
 const compileTemplate = require('./helpers/compile-template');
+const {updateMethodInds} = require('./config');
 
 const reTemplateAll = /@(Component)\(({[\s\d\w:'",.\/\-_=+~]+})?\)\s*(?:export)?\s+class\s+([\w\d_]+)\s*\{([\s\d\w:'";,.\/\-_=+~(){}[\]]*)}\s*$/igm;
 const reTemplateKey = /@Component\({[\s\w\d:'",.\-/\\]+selector\s*:\s*'([\s\w\d\-[\]./\\]+)'/gi;
@@ -18,14 +19,9 @@ function retrieveSelectors(html) {
     }
 }
 
-const updateMethodInds = {
-    'property' : 0,
-    'hook'     : 1,
-    'constant' : 2
-};
 
 function injectToConstructor(classBody, name, params, loader) {
-    let match         = new RegExp(reConstructor).exec(classBody);
+    let match = new RegExp(reConstructor).exec(classBody);
     if ( !match ) {
         console.error('Can\'t find constructor', name, classBody);
         return '';

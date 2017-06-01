@@ -1,47 +1,6 @@
-const G = {
-    reSpace         : /\s/,
-    reNotSpace      : /\S/,
-    reOperator      : /[\+\-\/\*\%=]/,
-    reLogicOperator : /(?:&&|\|\||==)/,
-    reExpr          : /[$\w\d\.]/i,
-    reScopeOpen     : /\(/,
-    reScopeClose    : /\)/,
-    reQuote         : /'/,
-    reBSlash        : /\\/,
-    reDot           : /\./
-};
 
-const TYPE = {
-    constant      : 0,
-    string        : 1,
-    operator      : 2,
-    expression    : 3,
-    expressionMap : 4,
-    scope         : 5,
-    number        : 6,
-    function      : 7
-};
+const {reExpression, TYPE, OPERATOR, expressionMorph} = require('../config');
 
-const OPERATOR = {
-    '+'  : 1,
-    '-'  : 2,
-    '*'  : 3,
-    '/'  : 4,
-    '%'  : 5,
-    '&&' : 6,
-    '||' : 7,
-    '==' : 8,
-    '='  : 9
-};
-
-const expressionMorph = {
-    true      : 1,
-    false     : 0,
-    null      : 0,
-    undefined : 0,
-    NaN       : 0,
-    Infinity  : 1
-};
 
 module.exports = function breakExpression(expr, startIndex = 0) {
     let workMap         = [];
@@ -66,11 +25,11 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 isStringEscaped = false;
             } else {
                 // check escape start
-                if ( G.reBSlash.test(c) ) {
+                if ( reExpression.reBSlash.test(c) ) {
                     isStringEscaped = true;
                 } else {
                     // check string end
-                    if ( G.reQuote.test(c) ) {
+                    if ( reExpression.reQuote.test(c) ) {
                         workMap.push([TYPE.string, stringBuffer.join('')]);
                         isString = false;
                     } else {
@@ -81,18 +40,18 @@ module.exports = function breakExpression(expr, startIndex = 0) {
             }
         } else {
             // check string starts
-            if ( G.reQuote.test(c) ) {
+            if ( reExpression.reQuote.test(c) ) {
                 stringBuffer = [];
                 isString     = true;
             } else {
                 // checkWritingExpression
                 if ( isExpression ) {
-                    if ( !G.reExpr.test(c) ) {
+                    if ( !reExpression.reExpr.test(c) ) {
                         let localExpr = stringBuffer.join('');
 
                         if ( isNaN(localExpr) ) {
-                            if ( G.reDot.exec(localExpr) ) {
-                                workMap.push([TYPE.expressionMap, localExpr.split(G.reDot)]);
+                            if ( reExpression.reDot.exec(localExpr) ) {
+                                workMap.push([TYPE.expressionMap, localExpr.split(reExpression.reDot)]);
                             } else {
                                 if ( expressionMorph[localExpr] ) {
                                     workMap.push([TYPE.number, expressionMorph[localExpr]]);
@@ -113,10 +72,10 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                 if ( !isExpression ) {
                     let cc = [c, nextC].join('');
 
-                    if ( G.reScopeClose.test(c) ) {
+                    if ( reExpression.reScopeClose.test(c) ) {
                         exportIndex++;
                         break;
-                    } else if ( G.reScopeOpen.test(c) ) {
+                    } else if ( reExpression.reScopeOpen.test(c) ) {
                         let scopeExpression = breakExpression(expr, i + 1);
                         i += scopeExpression.exportIndex + 1;
                         exportIndex += scopeExpression.exportIndex + 1;
@@ -129,14 +88,14 @@ module.exports = function breakExpression(expr, startIndex = 0) {
                     } else
 
                     // check operators
-                    if ( nextC && G.reLogicOperator.test(cc) ) {
+                    if ( nextC && reExpression.reLogicOperator.test(cc) ) {
                         i++;
                         workMap.push([TYPE.operator, OPERATOR[cc]]);
-                    } else if ( G.reOperator.test(c) ) {
+                    } else if ( reExpression.reOperator.test(c) ) {
                         workMap.push([TYPE.operator, OPERATOR[c]]);
                     } else {
                         // check expr starts
-                        if ( G.reExpr.test(c) ) {
+                        if ( reExpression.reExpr.test(c) ) {
                             stringBuffer = [c];
                             isExpression = true;
                         }
@@ -151,8 +110,8 @@ module.exports = function breakExpression(expr, startIndex = 0) {
     if ( isExpression ) {
         let localExpr = stringBuffer.join('');
         if ( isNaN(localExpr) ) {
-            if ( G.reDot.exec(localExpr) ) {
-                workMap.push([TYPE.expressionMap, localExpr.split(G.reDot)]);
+            if ( reExpression.reDot.exec(localExpr) ) {
+                workMap.push([TYPE.expressionMap, localExpr.split(reExpression.reDot)]);
             } else {
                 if ( expressionMorph[localExpr] ) {
                     workMap.push([TYPE.number, expressionMorph[localExpr]]);
