@@ -155,13 +155,13 @@ export class RenderSession {
 
         if ( template._inputs ) {
             forEach(template._inputVars, v => {
-                this.saveVariables(v, {node: newNode, ctx});
+                this.saveVariables(v, {node : newNode, ctx});
             });
             this.makeUpdateAble(newNode, (localContext = ctx) => {
                 forEach(template._inputs, (inp, key) => {
                     if ( document.activeElement === newNode && key === 'value' ) {
 
-                    } else if (key === 'class') {
+                    } else if ( key === 'class' ) {
                         newNode.className = evalExpression(localContext, inp);
                     } else {
                         newNode[key] = evalExpression(localContext, inp);
@@ -176,12 +176,24 @@ export class RenderSession {
 
     _render_element(target, ctx, template, isTop, ignoreFor) {
         //this.renderedTimes.element++;
-        let newNode = document.createElement(template.name);
+        let newNode;
 
-        template.attribs.forEach(pair => {
-            newNode.setAttribute(pair[0], pair[1]);
-            newNode[pair[0]] = pair[1];
-        });
+        if ( template._NS ) {
+            newNode = document.createElementNS(template._NS, template.name);
+            newNode._NS = template._NS;
+
+            template.attribs.forEach(pair => {
+                //newNode.setAttributeNS(template._NS, pair[0], pair[1]);
+                newNode.setAttribute(pair[0], pair[1]);
+            });
+        } else {
+            newNode = document.createElement(template.name);
+
+            template.attribs.forEach(pair => {
+                newNode.setAttribute(pair[0], pair[1]);
+                newNode[pair[0]] = pair[1];
+            });
+        }
 
         target.appendChild(newNode);
         return newNode;
@@ -205,7 +217,7 @@ export class RenderSession {
             });
 
             forEach(template._inputVars, v => {
-                this.saveVariables(v, {node: component, ctx});
+                this.saveVariables(v, {node : component, ctx});
             });
             this.makeUpdateAble(component, (localContext = ctx) => {
                 forEach(template._inputs, (inp, key) => {

@@ -33,6 +33,16 @@ const TYPE = {
     expressionMap : 4
 };
 
+const NSRules    = {
+    'http://www.w3.org/2000/svg' : 'svg,path'.split(',')
+};
+const NSElements = (() => {
+    let result = {};
+    for (let namespace in NSRules) {
+        NSRules[namespace].forEach(tag => result[tag] = namespace);
+    }
+    return result;
+})();
 
 // helpers
 function getBindingsVarsFromExpr(expr) {
@@ -172,19 +182,26 @@ function checkRenderContent(obj) {
     }
 }
 
-const replacementKeys = {
+const replacementKeys   = {
     class : 'className'
 };
-function replaceAttrKeys(key) {
-    return replacementKeys[key] || key;
-}
+const nsReplacementKeys = {
+    viewbox : 'viewBox'
+};
 
 function convertAttribs(ref) {
     let result = [];
 
-    Object.keys(ref.attribs).forEach(key => {
-        result.push([replaceAttrKeys(key), ref.attribs[key]]);
-    });
+    if ( ref._NS ) {
+        Object.keys(ref.attribs).forEach(key => {
+            result.push([(nsReplacementKeys[key] || key), ref.attribs[key]]);
+        });
+    } else {
+        Object.keys(ref.attribs).forEach(key => {
+            result.push([(replacementKeys[key] || key), ref.attribs[key]]);
+        });
+    }
+
     ref.attribs = result;
 }
 
@@ -227,6 +244,9 @@ function nodesToString(obj, params) {
             checkFor(ref);
             if ( knownSelectors.indexOf(ref.name) >= 0 ) {
                 ref._componentSelector = ref.name;
+            }
+            if ( NSElements[ref.name] ) {
+                ref._NS = NSElements[ref.name];
             }
             breakTwoWayBindingIntoInputAndBinding(ref);
             extractBindings(ref);
